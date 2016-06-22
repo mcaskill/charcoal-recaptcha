@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="file.ext">
+        <body>
+            <trans-unit id="recaptcha.missing-input-secret">
+                <source>recaptcha.missing-input-secret</source>
+                <target>The CAPTCHA secret is missing.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.invalid-input-secret">
+                <source>recaptcha.invalid-input-secret</source>
+                <target>The CAPTCHA secret is invalid or malformed.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.missing-input-response">
+                <source>recaptcha.missing-input-response</source>
+                <target>The CAPTCHA response is missing.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.invalid-input-response">
+                <source>recaptcha.invalid-input-response</source>
+                <target>The CAPTCHA response is invalid or malformed.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.help">
+                <source>recaptcha.help</source>
+                <target>Please contact us through our general inquiry form.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.is-human">
+                <source>recaptcha.is-human</source>
+                <target>Are you human?</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.is-robot">
+                <source>recaptcha.is-robot</source>
+                <target>Are you a robot?</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.unknown">
+                <source>recaptcha.unknown</source>
+                <target>An unknown error or malformed response has occurred.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.valid">
+                <source>recaptcha.valid</source>
+                <target>The CAPTCHA response is valid.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

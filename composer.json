@@ -1,0 +1,47 @@
+{
+  "name": "mcaskill/charcoal-recaptcha",
+  "description": "Google reCAPTCHA for Charcoal.",
+  "type": "library",
+  "license": "MIT",
+  "support": {
+    "issues": "https://github.com/mcaskill/charcoal-recaptcha/issues",
+    "source": "https://github.com/mcaskill/charcoal-recaptcha"
+  },
+  "authors": [
+    {
+      "name": "Chauncey McAskill",
+      "email": "chauncey@locomotive.ca"
+    },
+    {
+      "name": "Locomotive",
+      "homepage": "https://locomotive.ca"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=5.6",
+    "ext-mbstring": "*",
+    "google/recaptcha": "^1.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.8",
+    "squizlabs/php_codesniffer": "~2.4",
+    "satooshi/php-coveralls": "~1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Charcoal\\ReCaptcha\\": "src/"
+    }
+  },
+  "scripts": {
+    "test": [
+      "@phplint",
+      "@phpunit",
+      "@phpcs"
+    ],
+    "phplint": "find {src,tests} -name '*.php' -print0 | xargs -0 -n1 -P8 php -l | grep -v '^No syntax errors detected'; test $? -eq 1",
+    "phpunit": "php vendor/bin/phpunit --configuration tests/phpunit.xml --coverage-text",
+    "phpcs": "php vendor/bin/phpcs -ps --colors --standard=phpcs.xml src/",
+    "phpcbf": "php vendor/bin/phpcbf -ps --colors --standard=phpcs.xml src/ tests/"
+  }
+}

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="file.ext">
+        <body>
+            <trans-unit id="recaptcha.missing-input-secret">
+                <source>recaptcha.missing-input-secret</source>
+                <target>Le secret CAPTCHA est absent.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.invalid-input-secret">
+                <source>recaptcha.invalid-input-secret</source>
+                <target>Le secret CAPTCHA est invalide ou malformé.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.missing-input-response">
+                <source>recaptcha.missing-input-response</source>
+                <target>La réponse CAPTCHA est absente.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.invalid-input-response">
+                <source>recaptcha.invalid-input-response</source>
+                <target>La réponse CAPTCHA est invalide ou malformé.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.help">
+                <source>recaptcha.help</source>
+                <target>S'il vous plaît contactez-nous via notre formulaire de demande de renseignements généraux.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.is-human">
+                <source>recaptcha.is-human</source>
+                <target>Êtes-vous un humain?</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.is-robot">
+                <source>recaptcha.is-robot</source>
+                <target>Êtes-vous un robot?</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.unknown">
+                <source>recaptcha.unknown</source>
+                <target>Une erreur inconnue ou une réponse malformée est survenus.</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.valid">
+                <source>recaptcha.valid</source>
+                <target>La réponse CAPTCHA est valide.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
