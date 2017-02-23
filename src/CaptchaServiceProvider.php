@@ -10,7 +10,7 @@ use Pimple\ServiceProviderInterface;
 use ReCaptcha\ReCaptcha;
 
 // Local dependency
-use CaptchaConfig;
+use Charcoal\ReCaptcha\CaptchaConfig;
 
 /**
  * Google reCAPTCHA Service Provider

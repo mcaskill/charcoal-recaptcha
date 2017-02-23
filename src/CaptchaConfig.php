@@ -49,8 +49,8 @@ class CaptchaConfig extends AbstractConfig
     {
         return [
             'field'       => static::DEFAULT_FIELD_NAME,
-            'public_key'  => null,
-            'private_key' => null
+            'public_key'  => '',
+            'private_key' => ''
         ];
     }
 
