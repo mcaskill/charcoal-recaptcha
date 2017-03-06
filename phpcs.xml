@@ -55,7 +55,12 @@
     <!-- If a class is declared as being final, it is redundant to redeclare methods as final -->
     <rule ref="Generic.CodeAnalysis.UnnecessaryFinalModifier" />
     <!-- Unused function parameter are disouraged -->
-    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter" />
+    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter">
+        <properties>
+            <property name="ignore_extended_classes" value="true" />
+            <property name="allow_for_callbacks" value="true" />
+        </properties>
+    </rule>
     <!-- Detects unnecessary overridden methods that simply call their parent -->
     <rule ref="Generic.CodeAnalysis.UselessOverridingMethod" />
     <!-- This sniff class detects empty statement. -->
@@ -160,6 +165,9 @@
 
     <!-- Tests that all arithmetic operations are bracketed. -->
     <rule ref="Squiz.Formatting.OperatorBracket" />
+    <rule ref="Squiz.Formatting.OperatorBracket.MissingBrackets">
+        <severity>0</severity>
+    </rule >
 
 <!-- Functions Sniffs -->
 
@@ -306,6 +314,7 @@
     <!-- Makes sure there are no spaces between the concatenation operator (.) the strings -->
     <rule ref="Squiz.Strings.ConcatenationSpacing">
         <properties>
+            <property name="spacing" value="1" />
             <property name="ignoreNewlines" value="true"/>
         </properties>
     </rule>

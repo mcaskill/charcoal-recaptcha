@@ -4,11 +4,11 @@
         <body>
             <trans-unit id="recaptcha.missing-input-secret">
                 <source>recaptcha.missing-input-secret</source>
-                <target>Le secret CAPTCHA est absent.</target>
+                <target>Le secret reCAPTCHA est absent.</target>
             </trans-unit>
             <trans-unit id="recaptcha.invalid-input-secret">
                 <source>recaptcha.invalid-input-secret</source>
-                <target>Le secret CAPTCHA est invalide ou malformé.</target>
+                <target>Le secret reCAPTCHA est invalide ou malformé.</target>
             </trans-unit>
             <trans-unit id="recaptcha.missing-input-response">
                 <source>recaptcha.missing-input-response</source>
@@ -18,10 +18,6 @@
                 <source>recaptcha.invalid-input-response</source>
                 <target>La réponse CAPTCHA est invalide ou malformé.</target>
             </trans-unit>
-            <trans-unit id="recaptcha.help">
-                <source>recaptcha.help</source>
-                <target>S'il vous plaît contactez-nous via notre formulaire de demande de renseignements généraux.</target>
-            </trans-unit>
             <trans-unit id="recaptcha.is-human">
                 <source>recaptcha.is-human</source>
                 <target>Êtes-vous un humain?</target>
@@ -30,9 +26,13 @@
                 <source>recaptcha.is-robot</source>
                 <target>Êtes-vous un robot?</target>
             </trans-unit>
-            <trans-unit id="recaptcha.unknown">
-                <source>recaptcha.unknown</source>
-                <target>Une erreur inconnue ou une réponse malformée est survenus.</target>
+            <trans-unit id="recaptcha.error-code">
+                <source>recaptcha.error-code</source>
+                <target>Erreur reCAPTCHA inconnue: {code}</target>
+            </trans-unit>
+            <trans-unit id="recaptcha.error-unknown">
+                <source>recaptcha.error-unknown</source>
+                <target>Une erreur inconnue ou une réponse malformée est survenus avec le reCAPTCHA.</target>
             </trans-unit>
             <trans-unit id="recaptcha.valid">
                 <source>recaptcha.valid</source>

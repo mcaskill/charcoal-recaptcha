@@ -4,7 +4,7 @@ namespace Charcoal\ReCaptcha;
 
 use InvalidArgumentException;
 
-// Dependency from 'charcoal-config'
+// From 'charcoal-config'
 use Charcoal\Config\AbstractConfig;
 
 /**
@@ -15,12 +15,12 @@ class CaptchaConfig extends AbstractConfig
     /**
      * The default input name and POST parameter used by Google reCAPTCHA.
      *
-     * @var string
+     * @const string
      */
     const DEFAULT_FIELD_NAME = 'g-recaptcha-response';
 
     /**
-     * Form control name and  POST parameter when the user submits the form on your site.
+     * Form control name and POST parameter when the user submits the form on your site.
      *
      * @var string
      */
@@ -64,9 +64,10 @@ class CaptchaConfig extends AbstractConfig
     public function setField($name)
     {
         if (!is_string($name)) {
-            throw new InvalidArgumentException(
-                'The field name must be a string.'
-            );
+            throw new InvalidArgumentException(sprintf(
+                'The field name must be a string, received %s',
+                is_object($name) ? get_class($name) : gettype($name)
+            ));
         }
 
         $this->field = $name;
@@ -85,26 +86,6 @@ class CaptchaConfig extends AbstractConfig
     }
 
     /**
-     * Set the public key used for displaying the reCAPTCHA widget.
-     *
-     * @param  string $key The public key.
-     * @throws InvalidArgumentException If the public key is not a string.
-     * @return CaptchaConfig Chainable
-     */
-    public function setPublicKey($key)
-    {
-        if (!is_string($key)) {
-            throw new InvalidArgumentException(
-                'The public key must be a string.'
-            );
-        }
-
-        $this->publicKey = $key;
-
-        return $this;
-    }
-
-    /**
      * Retrieve the public key used for displaying the reCAPTCHA widget.
      *
      * @return string
@@ -115,21 +96,22 @@ class CaptchaConfig extends AbstractConfig
     }
 
     /**
-     * Set the private key shared between your site and reCAPTCHA.
+     * Set the public key used for displaying the reCAPTCHA widget.
      *
-     * @param  string $key The private key.
-     * @throws InvalidArgumentException If the private key is not a string.
+     * @param  string $key The public key.
+     * @throws InvalidArgumentException If the public key is not a string.
      * @return CaptchaConfig Chainable
      */
-    public function setPrivateKey($key)
+    public function setPublicKey($key)
     {
         if (!is_string($key)) {
-            throw new InvalidArgumentException(
-                'The private key must be a string.'
-            );
+            throw new InvalidArgumentException(sprintf(
+                'The public key must be a string, received %s',
+                is_object($key) ? get_class($key) : gettype($key)
+            ));
         }
 
-        $this->privateKey = $key;
+        $this->publicKey = $key;
 
         return $this;
     }
@@ -142,5 +124,26 @@ class CaptchaConfig extends AbstractConfig
     public function privateKey()
     {
         return $this->privateKey;
+    }
+
+    /**
+     * Set the private key shared between your site and reCAPTCHA.
+     *
+     * @param  string $key The private key.
+     * @throws InvalidArgumentException If the private key is not a string.
+     * @return CaptchaConfig Chainable
+     */
+    public function setPrivateKey($key)
+    {
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(sprintf(
+                'The private key must be a string, received %s',
+                is_object($key) ? get_class($key) : gettype($key)
+            ));
+        }
+
+        $this->privateKey = $key;
+
+        return $this;
     }
 }

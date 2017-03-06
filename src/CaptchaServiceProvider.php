@@ -2,15 +2,17 @@
 
 namespace Charcoal\ReCaptcha;
 
-// Dependencies from Pimple
+// From Pimple
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
-// Dependency from Google
+// From Google
 use ReCaptcha\ReCaptcha;
 
-// Local dependency
+// From 'charcoal-recaptcha'
+use Charcoal\ReCaptcha\Captcha;
 use Charcoal\ReCaptcha\CaptchaConfig;
+use Charcoal\ReCaptcha\LocalizedCaptcha;
 
 /**
  * Google reCAPTCHA Service Provider
@@ -20,7 +22,7 @@ class CaptchaServiceProvider implements ServiceProviderInterface
     /**
      * Register Google reCAPTCHA.
      *
-     * @param Container $container A DI container.
+     * @param  Container $container A DI container.
      * @return void
      */
     public function register(Container $container)
@@ -28,44 +30,67 @@ class CaptchaServiceProvider implements ServiceProviderInterface
         /**
          * Setup the Google reCaptcha service configuration.
          *
-         * @param Container $container A container instance.
+         * @param  Container $container A container instance.
          * @return CaptchaConfig
          */
-        $container['google/recaptcha/config'] = function (Container $container) {
+        $container['charcoal/captcha/config'] = function (Container $container) {
             $appConfig = $container['config'];
-            $captchaConfig = new CaptchaConfig($appConfig->get('google.recaptcha'));
 
-            return $captchaConfig;
+            return new CaptchaConfig($appConfig['apis.google.recaptcha']);
         };
 
         /**
-         * Add the Google reCaptcha Service
+         * Add the Google reCaptcha Client
          *
-         * @param Container $container A container instance.
+         * @param  Container $container A container instance.
          * @return ReCaptcha
          */
         $container['google/recaptcha'] = function (Container $container) {
-            return new ReCaptcha($container['google/recaptcha/config']['private_key']);
+            $captchaConfig = $container['charcoal/captcha/config'];
+            return new ReCaptcha($captchaConfig['private_key']);
+        };
+
+        /**
+         * Add the Charcoal reCaptcha Service
+         *
+         * @param  Container $container A container instance.
+         * @return Captcha
+         */
+        $container['charcoal/captcha'] = function (Container $container) {
+            if (isset($container['translator'])) {
+                $captcha = new LocalizedCaptcha([
+                    'config'     => $container['charcoal/captcha/config'],
+                    'client'     => $container['google/recaptcha'],
+                    'translator' => $container['translator']
+                ]);
+            } else {
+                $captcha = new Captcha([
+                    'config' => $container['charcoal/captcha/config'],
+                    'client' => $container['google/recaptcha']
+                ]);
+            }
+
+            return $captcha;
         };
 
         /**
          * Alias for retrieving the Google reCaptcha public key
          *
-         * @param Container $container A container instance.
+         * @param  Container $container A container instance.
          * @return string
          */
-        $container['google/recaptcha/public_key'] = $container->protect(function (Container $container) {
-            return $container['google/recaptcha/config']['public_key'];
-        });
+        $container['google/recaptcha/public_key'] = function (Container $container) {
+            return $container['charcoal/captcha/config']['public_key'];
+        };
 
         /**
          * Alias for retrieving the Google reCaptcha private key
          *
-         * @param Container $container A container instance.
+         * @param  Container $container A container instance.
          * @return string
          */
-        $container['google/recaptcha/private_key'] = $container->protect(function (Container $container) {
-            return $container['google/recaptcha/config']['private_key'];
-        });
+        $container['google/recaptcha/private_key'] = function (Container $container) {
+            return $container['charcoal/captcha/config']['private_key'];
+        };
     }
 }
