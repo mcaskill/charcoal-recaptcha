@@ -56,7 +56,7 @@ class LocalizedCaptcha extends Captcha
             default:
                 return $this->translator()->trans('recaptcha.error-code', [
                     '{code}' => $code
-                ], [], 'validators');
+                ], 'validators');
         }
     }
 }

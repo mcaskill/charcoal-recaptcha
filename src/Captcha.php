@@ -120,13 +120,11 @@ class Captcha implements
      * Set the reCAPTCHA client.
      *
      * @param  ReCaptchaClient $client The CAPTCHA service.
-     * @return self
+     * @return void
      */
     private function setClient(ReCaptchaClient $client)
     {
         $this->client = $client;
-
-        return $this;
     }
 
     /**
