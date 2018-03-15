@@ -13,18 +13,18 @@ use Charcoal\Config\AbstractConfig;
 class CaptchaConfig extends AbstractConfig
 {
     /**
-     * The default input name and POST parameter used by Google reCAPTCHA.
+     * The default input name and GET / POST parameter key used by Google reCAPTCHA.
      *
      * @const string
      */
-    const DEFAULT_FIELD_NAME = 'g-recaptcha-response';
+    const DEFAULT_INPUT_PARAM_KEY = 'g-recaptcha-response';
 
     /**
      * Form control name and POST parameter when the user submits the form on your site.
      *
      * @var string
      */
-    private $field;
+    private $inputKey;
 
     /**
      * The site key used for displaying the reCAPTCHA widget.
@@ -48,41 +48,41 @@ class CaptchaConfig extends AbstractConfig
     public function defaults()
     {
         return [
-            'field'       => static::DEFAULT_FIELD_NAME,
+            'input_key'   => static::DEFAULT_INPUT_PARAM_KEY,
             'public_key'  => '',
             'private_key' => ''
         ];
     }
 
     /**
-     * Define the field name to validate the reCAPTCHA response.
+     * Define the HTTP parameter key of the user response token to validate.
      *
-     * @param  string $name The input name used as the POST parameter.
-     * @throws InvalidArgumentException If the field name is not a string.
-     * @return self
+     * @param  string $key The parameter key on an HTTP request to lookup.
+     * @throws InvalidArgumentException If the parameter key is not a string.
+     * @return CaptchaConfig Chainable
      */
-    public function setField($name)
+    public function setInputKey($key)
     {
-        if (!is_string($name)) {
+        if (!is_string($key)) {
             throw new InvalidArgumentException(sprintf(
-                'The field name must be a string, received %s',
-                is_object($name) ? get_class($name) : gettype($name)
+                'The parameter key must be a string, received %s',
+                is_object($key) ? get_class($key) : gettype($key)
             ));
         }
 
-        $this->field = $name;
+        $this->inputKey = $key;
 
         return $this;
     }
 
     /**
-     * Retrieve the field name containing the reCAPTCHA response.
+     * Retrieve the HTTP parameter key of the user response token to validate.
      *
      * @return string
      */
-    public function field()
+    public function inputKey()
     {
-        return $this->field;
+        return $this->inputKey;
     }
 
     /**

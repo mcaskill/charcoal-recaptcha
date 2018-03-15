@@ -150,7 +150,7 @@ class Captcha implements
     public function verifyRequest(ServerRequestInterface $request)
     {
         return $this->verify(
-            $request->getParam($this->config('field')),
+            $request->getParam($this->config('input_key')),
             $request->getServerParams()['REMOTE_ADDR']
         );
     }
