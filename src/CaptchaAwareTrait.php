@@ -25,7 +25,7 @@ trait CaptchaAwareTrait
      * @throws RuntimeException If the CAPTCHA service was not previously set.
      * @return Captcha
      */
-    public function captcha()
+    protected function captcha()
     {
         if (!isset($this->captcha)) {
             throw new RuntimeException(sprintf(
@@ -43,7 +43,7 @@ trait CaptchaAwareTrait
      * @param  Captcha $captcha The CAPTCHA service.
      * @return void
      */
-    public function setCaptcha(Captcha $captcha)
+    protected function setCaptcha(Captcha $captcha)
     {
         $this->captcha = $captcha;
     }
