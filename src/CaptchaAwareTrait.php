@@ -43,7 +43,7 @@ trait CaptchaAwareTrait
      * @param  Captcha $captcha The CAPTCHA service.
      * @return void
      */
-    public function setCaptcha(Captcha $captcha)
+    protected function setCaptcha(Captcha $captcha)
     {
         $this->captcha = $captcha;
     }
