@@ -149,10 +149,55 @@ class Captcha implements
      */
     public function verifyRequest(ServerRequestInterface $request)
     {
-        return $this->verify(
-            $request->getParam($this->config('input_key')),
-            $request->getServerParams()['REMOTE_ADDR']
-        );
+        $token    = $this->extractTokenFromRequest($request);
+        $remoteIp = $this->extractRemoteIpFromRequest($request);
+
+        return $this->verify($token, $remoteIp);
+    }
+
+    /**
+     * Extract the user response token, provided by Google reCAPTCHA, from the server request.
+     *
+     * @param  ServerRequestInterface $request A PSR-7 compatible Request instance.
+     * @return string|null Returns the user response token or NULL.
+     */
+    private function extractTokenFromRequest(ServerRequestInterface $request)
+    {
+        $key = $this->config('input_key');
+
+        if (is_callable([ $request, 'getParam' ])) {
+            return $request->getParam($key);
+        }
+
+        $postParams = $request->getParsedBody();
+        if (is_array($postParams) && isset($postParams[$key])) {
+            return $postParams[$key];
+        } elseif (is_object($postParams) && property_exists($postParams, $key)) {
+            return $postParams->$key;
+        }
+
+        $getParams = $request->getQueryParams();
+        if (isset($getParams[$key])) {
+            return $getParams[$key];
+        }
+
+        return null;
+    }
+
+    /**
+     * Extract the remote IP address from the server request.
+     *
+     * @param  ServerRequestInterface $request A PSR-7 compatible Request instance.
+     * @return string|null Returns the remote IP address or NULL.
+     */
+    private function extractRemoteIpFromRequest(ServerRequestInterface $request)
+    {
+        if (is_callable([ $request, 'getServerParam' ])) {
+            return $request->getServerParam('REMOTE_ADDR');
+        }
+
+        $serverParams = $request->getServerParams();
+        return isset($serverParams['REMOTE_ADDR']) ? $serverParams['REMOTE_ADDR'] : null;
     }
 
     /**
