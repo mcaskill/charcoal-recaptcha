@@ -59,7 +59,7 @@ class CaptchaConfig extends AbstractConfig
      *
      * @param  string $name The input name used as the POST parameter.
      * @throws InvalidArgumentException If the field name is not a string.
-     * @return CaptchaConfig Chainable
+     * @return self
      */
     public function setField($name)
     {
@@ -100,7 +100,7 @@ class CaptchaConfig extends AbstractConfig
      *
      * @param  string $key The public key.
      * @throws InvalidArgumentException If the public key is not a string.
-     * @return CaptchaConfig Chainable
+     * @return self
      */
     public function setPublicKey($key)
     {
@@ -131,7 +131,7 @@ class CaptchaConfig extends AbstractConfig
      *
      * @param  string $key The private key.
      * @throws InvalidArgumentException If the private key is not a string.
-     * @return CaptchaConfig Chainable
+     * @return self
      */
     public function setPrivateKey($key)
     {

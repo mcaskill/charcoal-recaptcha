@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Charcoal">
+    <description>Charcoal Coding Standard</description>
+
+    <arg name="encoding" value="utf-8" />
+
+    <config name="show_progress" value="1" />
+    <config name="ignore_warnings_on_exit" value="1" />
+
+    <rule ref="PSR2" />
+</ruleset>
