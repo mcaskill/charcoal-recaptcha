@@ -29,8 +29,8 @@ trait CaptchaAwareTrait
     {
         if (!isset($this->captcha)) {
             throw new RuntimeException(sprintf(
-                'CAPTCHA is not defined for "%s"',
-                get_class($this)
+                'Missing %s adapter',
+                Captcha::class
             ));
         }
 
