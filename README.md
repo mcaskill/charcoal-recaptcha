@@ -1,8 +1,12 @@
-# Google reCAPTCHA for [Charcoal][charcoal-app]
+# Google reCAPTCHA for Charcoal
 
-![google captcha for laravel 5](http://i.imgur.com/aHBOqAS.gif)
+![Google reCAPTCHA for Charcoal](http://i.imgur.com/aHBOqAS.gif)
+
+A [Charcoal][charcoal/app] service provider for the [Google reCAPTCHA client Library][google/recaptcha].
 
 This package can be used as a PSR-7 middleware or as an object in your service layer.
+
+
 
 ## Installation
 
@@ -10,7 +14,9 @@ This package can be used as a PSR-7 middleware or as an object in your service l
 composer require mcaskill/charcoal-recaptcha
 ```
 
-See [composer.json](composer.json) for depenencides.
+See [`composer.json`](composer.json) for depenencides.
+
+
 
 ## What's inside?
 
@@ -23,13 +29,15 @@ See [composer.json](composer.json) for depenencides.
 -   **`Charcoal\ReCaptcha\Captcha`**
     the service that handles the reCAPTCHA client.
 -   **`Charcoal\ReCaptcha\LocalizedCaptcha`**
-    a [translator-aware](charcoal-translator) variant of the service.
+    a [translator-aware][charcoal/translator] variant of the service.
+
+
 
 ## Usage
 
 ```php
-use \ReCaptcha\ReCaptcha;
-use \Charcoal\ReCaptcha\Captcha;
+use ReCaptcha\ReCaptcha;
+use Charcoal\ReCaptcha\Captcha;
 
 $container[ReCaptcha::class] = new ReCaptcha($key);
 $container[Captcha::class]   = new Captcha([
@@ -62,9 +70,13 @@ echo $captcha->display(
 );
 ```
 
+
+
 ## Service Provider
 
-If [`CaptchaServiceProvider`] is used, the following are provided.
+If [`CaptchaServiceProvider`](src/CaptchaServiceProvider.php) is used, the following are provided.
+
+
 
 ### Parameters
 
@@ -72,10 +84,14 @@ If [`CaptchaServiceProvider`] is used, the following are provided.
 -   **google/recaptcha/public_key**: The site key used for displaying the widget.
 -   **google/recaptcha/private_key**: The secret key shared between your application backend and the reCAPTCHA server to verify the user's response.
 
+
+
 ### Services
 
 -   **charcoal/captcha**: An instance of [`Captcha`](src/CaptchaConfig.php).
--   **google/recaptcha**: An instance of Google's [`ReCaptcha`][recaptcha-class].
+-   **google/recaptcha**: An instance of Google's [`ReCaptcha`][class-recaptcha].
+
+
 
 ### Registering
 
@@ -108,6 +124,8 @@ $container->register(new Charcoal\ReCaptcha\CaptchaServiceProvider(), [
 ]);
 ```
 
+
+
 ## Acknowledgements
 
 This package is inspired by:
@@ -116,7 +134,22 @@ This package is inspired by:
 - [`anhskohbo/no-captcha`](https://github.com/anhskohbo/no-captcha)
 - [`buzz/laravel-google-captcha`](https://github.com/thinhbuzz/laravel-google-captcha)
 
-[charcoal-app]: https://github.com/locomotivemtl/charcoal-app
-[charcoal-translator]: https://github.com/locomotivemtl/charcoal-translator
-[recaptcha]: https://github.com/google/recaptcha
-[recaptcha-class]: https://github.com/google/recaptcha/blob/master/src/ReCaptcha/ReCaptcha.php
+
+
+## License
+
+-   Charcoal reCAPTCHA component is licensed under the MIT license. See [LICENSE](LICENSE) for details.
+-   Charcoal framework is licensed under the MIT license. See [LICENSE][license-charcoal] for details.
+-   Google reCAPTCHA PHP client library is licensed under the BSD License. See the [LICENSE][license-recaptcha] file for details.
+
+
+
+[charcoal/recaptcha]:  https://packagist.org/packages/mcaskill/charcoal-recaptcha
+[charcoal/app]:        https://packagist.org/packages/locomotivemtl/charcoal-app
+[charcoal/translator]: https://packagist.org/packages/locomotivemtl/charcoal-translator
+
+[google/recaptcha]:    https://packagist.org/packages/google/recaptcha
+[class-recaptcha]:     https://github.com/google/recaptcha/blob/1.1.3/src/ReCaptcha/ReCaptcha.php
+
+[license-charcoal]:    https://github.com/locomotivemtl/charcoal-app/blob/master/LICENSE
+[license-recaptcha]:   https://github.com/google/recaptcha/blob/master/LICENSE
