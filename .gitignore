@@ -1,2 +1,15 @@
-vendor/
+# Package Managers
+
+composer.phar
 composer.lock
+/vendor/
+
+# Logging
+
+*.log
+
+# Builds
+
+/build/docs/
+/build/logs/
+/build/report/

@@ -1,5 +1,11 @@
 # Google reCAPTCHA for Charcoal
 
+[![License][badge-license]][charcoal/recaptcha]
+[![Latest Stable Version][badge-version]][charcoal/recaptcha]
+[![Code Quality][badge-scrutinizer]][dev-scrutinizer]
+[![Coverage Status][badge-coveralls]][dev-coveralls]
+[![Build Status][badge-travis]][dev-travis]
+
 ![Google reCAPTCHA for Charcoal](http://i.imgur.com/aHBOqAS.gif)
 
 A [Charcoal][charcoal/app] service provider for the [Google reCAPTCHA client Library][google/recaptcha].
@@ -143,6 +149,16 @@ This package is inspired by:
 -   Google reCAPTCHA PHP client library is licensed under the BSD License. See the [LICENSE][license-recaptcha] file for details.
 
 
+
+[dev-scrutinizer]:     https://scrutinizer-ci.com/g/mcaskill/charcoal-recaptcha/
+[dev-coveralls]:       https://coveralls.io/r/mcaskill/charcoal-recaptcha
+[dev-travis]:          https://travis-ci.org/mcaskill/charcoal-recaptcha
+
+[badge-license]:       https://img.shields.io/packagist/l/mcaskill/charcoal-recaptcha.svg?style=flat-square
+[badge-version]:       https://img.shields.io/packagist/v/mcaskill/charcoal-recaptcha.svg?style=flat-square
+[badge-scrutinizer]:   https://img.shields.io/scrutinizer/g/mcaskill/charcoal-recaptcha.svg?style=flat-square
+[badge-coveralls]:     https://img.shields.io/coveralls/mcaskill/charcoal-recaptcha.svg?style=flat-square
+[badge-travis]:        https://img.shields.io/travis/mcaskill/charcoal-recaptcha.svg?style=flat-square
 
 [charcoal/recaptcha]:  https://packagist.org/packages/mcaskill/charcoal-recaptcha
 [charcoal/app]:        https://packagist.org/packages/locomotivemtl/charcoal-app

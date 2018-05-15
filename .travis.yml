@@ -1,0 +1,38 @@
+sudo: false
+
+language: php
+php:
+  - 5.6
+  - 7.0
+  - 7.1
+  - 7.2
+  - nightly
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: 5.6
+    - php: nightly
+
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - vendor
+
+before_install:
+  - composer self-update --quiet
+
+before_script:
+  - mkdir -p build/logs
+  - composer install --no-interaction --no-suggest
+
+script:
+  - composer phplint
+  - composer phpcs
+  - composer phpunit -- --coverage-clover "build/logs/clover.xml"
+
+after_script:
+  - if [[ "$TRAVIS_PHP_VERSION" == '7.2' ]]; then php vendor/bin/php-coveralls -v ; fi
