@@ -101,18 +101,10 @@ class Captcha implements
     /**
      * Retrieve the ReCaptcha client.
      *
-     * @throws RuntimeException If the client was not properly set.
      * @return ReCaptchaClient
      */
-    private function client()
+    public function client()
     {
-        if ($this->client === null) {
-            throw new RuntimeException(sprintf(
-                'Can not access %s, the dependency has not been set.',
-                ReCaptcha::class
-            ));
-        }
-
         return $this->client;
     }
 
@@ -122,7 +114,7 @@ class Captcha implements
      * @param  ReCaptchaClient $client The CAPTCHA service.
      * @return void
      */
-    private function setClient(ReCaptchaClient $client)
+    public function setClient(ReCaptchaClient $client)
     {
         $this->client = $client;
     }
@@ -290,7 +282,7 @@ class Captcha implements
      * Render the HTML script and widget.
      *
      * @param  array|boolean|null $attributes  The HTML attributes for the 'g-recaptcha' tag.
-     * @param  array|boolean|null $queryParams The query parameters fpr the JavaScript API link.
+     * @param  array|boolean|null $queryParams The query parameters for the JavaScript API link.
      * @return string
      */
     public function display($attributes = true, $queryParams = true)
