@@ -15,7 +15,6 @@ use ReCaptcha\ReCaptcha as ReCaptchaClient;
 use ReCaptcha\Response as ReCaptchaResponse;
 
 // From 'charcoal-config'
-use Charcoal\Config\ConfigurableInterface;
 use Charcoal\Config\ConfigurableTrait;
 
 // From 'charcoal-recaptcha'
@@ -26,10 +25,11 @@ use Charcoal\ReCaptcha\CaptchaConfig;
  *
  * This class can be used as a PSR-7 middleware or as an object in your service layer.
  */
-class Captcha implements
-    ConfigurableInterface
+class Captcha
 {
-    use ConfigurableTrait;
+    use ConfigurableTrait {
+        ConfigurableTrait::setConfig as private;
+    }
 
     /**
      * The JavaScript API for Google reCAPTCHA.
@@ -114,7 +114,7 @@ class Captcha implements
      * @param  ReCaptchaClient $client The CAPTCHA service.
      * @return void
      */
-    public function setClient(ReCaptchaClient $client)
+    private function setClient(ReCaptchaClient $client)
     {
         $this->client = $client;
     }
