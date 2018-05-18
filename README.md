@@ -26,16 +26,16 @@ See [`composer.json`](composer.json) for depenencides.
 
 ## What's inside?
 
--   **`Charcoal\ReCaptcha\CaptchaServiceProvider`**
-    for registering the CAPTCHA service, reCAPTCHA client, and configuration object.
--   **`Charcoal\ReCaptcha\CaptchaConfig`**
-    for setting up the reCAPTCHA client.
--   **`Charcoal\ReCaptcha\CaptchaAwareTrait`**
-    for convenience.
--   **`Charcoal\ReCaptcha\Captcha`**
-    the service that handles the reCAPTCHA client.
--   **`Charcoal\ReCaptcha\LocalizedCaptcha`**
-    a [translator-aware][charcoal/translator] variant of the service.
+-   **`Charcoal\ReCaptcha\CaptchaServiceProvider`**: 
+    Pimple service provider.
+-   **`Charcoal\ReCaptcha\CaptchaConfig`**: 
+    Configuring the CAPTCHA service.
+-   **`Charcoal\ReCaptcha\CaptchaAwareTrait`**: 
+    Convenient trait for interfacing with the CAPTCHA service.
+-   **`Charcoal\ReCaptcha\Captcha`**: 
+    Service that handles the reCAPTCHA client.
+-   **`Charcoal\ReCaptcha\LocalizedCaptcha`**: 
+    [Translator-aware][charcoal/translator] variant of the service.
 
 
 
