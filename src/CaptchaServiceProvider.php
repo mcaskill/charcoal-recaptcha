@@ -72,25 +72,5 @@ class CaptchaServiceProvider implements ServiceProviderInterface
 
             return $captcha;
         };
-
-        /**
-         * Alias for retrieving the Google reCaptcha public key
-         *
-         * @param  Container $container A container instance.
-         * @return string
-         */
-        $container['google/recaptcha/public_key'] = function (Container $container) {
-            return $container['charcoal/captcha/config']['public_key'];
-        };
-
-        /**
-         * Alias for retrieving the Google reCaptcha private key
-         *
-         * @param  Container $container A container instance.
-         * @return string
-         */
-        $container['google/recaptcha/private_key'] = function (Container $container) {
-            return $container['charcoal/captcha/config']['private_key'];
-        };
     }
 }

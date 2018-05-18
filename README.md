@@ -87,8 +87,6 @@ If [`CaptchaServiceProvider`](src/CaptchaServiceProvider.php) is used, the follo
 ### Parameters
 
 -   **charcoal/captcha/config**: An instance of [`CaptchaConfig`](src/CaptchaConfig.php).
--   **google/recaptcha/public_key**: The site key used for displaying the widget.
--   **google/recaptcha/private_key**: The secret key shared between your application backend and the reCAPTCHA server to verify the user's response.
 
 
 
