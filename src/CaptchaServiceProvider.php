@@ -40,34 +40,21 @@ class CaptchaServiceProvider implements ServiceProviderInterface
         };
 
         /**
-         * Add the Google reCaptcha Client
-         *
-         * @param  Container $container A container instance.
-         * @return ReCaptcha
-         */
-        $container['google/recaptcha'] = function (Container $container) {
-            $captchaConfig = $container['charcoal/captcha/config'];
-            return new ReCaptcha($captchaConfig['private_key']);
-        };
-
-        /**
          * Add the Charcoal reCaptcha Service
          *
          * @param  Container $container A container instance.
          * @return Captcha
          */
         $container['charcoal/captcha'] = function (Container $container) {
+            $args = [
+                'config' => $container['charcoal/captcha/config']
+            ];
+
             if (isset($container['translator'])) {
-                $captcha = new LocalizedCaptcha([
-                    'config'     => $container['charcoal/captcha/config'],
-                    'client'     => $container['google/recaptcha'],
-                    'translator' => $container['translator']
-                ]);
+                $args['translator'] = $container['translator'];
+                $captcha = new LocalizedCaptcha($args);
             } else {
-                $captcha = new Captcha([
-                    'config' => $container['charcoal/captcha/config'],
-                    'client' => $container['google/recaptcha']
-                ]);
+                $captcha = new Captcha($args);
             }
 
             return $captcha;

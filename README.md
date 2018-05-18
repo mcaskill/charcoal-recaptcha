@@ -42,18 +42,14 @@ See [`composer.json`](composer.json) for depenencides.
 ## Usage
 
 ```php
-use ReCaptcha\ReCaptcha;
 use Charcoal\ReCaptcha\Captcha;
 
-$container[ReCaptcha::class] = new ReCaptcha($key);
-$container[Captcha::class]   = new Captcha([
+$captcha = new Captcha([
     'config' => [
-        'public_key' => '…'
-    ],
-    'client' => $container[ReCaptcha::class]
+        'public_key'  => '…',
+        'private_key' => '…',
+    ]
 ]);
-
-$captcha = $container[Captcha::class];
 
 // As middleware
 $app->post('/signup', '…')->add($captcha);
@@ -76,6 +72,49 @@ echo $captcha->display(
 );
 ```
 
+By default, the `Captcha` adapter will defer the instantiation of [`ReCaptcha`][class-recaptcha] until the first verification request.
+
+
+
+### Custom ReCaptcha Class
+
+The `ReCaptcha` class be swapped using the `client_class` option.
+
+```php
+use Charcoal\ReCaptcha\Captcha;
+use MyApp\ MyCustomReCaptcha;
+
+$captcha = new Captcha([
+    'config' => [
+        'public_key'  => '…',
+        'private_key' => '…',
+    ],
+    'client_class' =>  MyCustomReCaptcha::class
+]);
+```
+
+
+
+### Custom ReCaptcha Instance
+
+An instance of the `ReCaptcha` class can be assigned using the `client` option.
+
+```php
+use Charcoal\ReCaptcha\Captcha;
+use ReCaptcha\ReCaptcha;
+use ReCaptcha\RequestMethod\CurlPost;
+
+$client = new ReCaptcha('…', new CurlPost());
+
+$captcha = new Captcha([
+    'config' => [
+        'public_key'  => '…',
+        'private_key' => '…',
+    ],
+    'client' => $client
+]);
+```
+
 
 
 ## Service Provider
@@ -93,7 +132,6 @@ If [`CaptchaServiceProvider`](src/CaptchaServiceProvider.php) is used, the follo
 ### Services
 
 -   **charcoal/captcha**: An instance of [`Captcha`](src/CaptchaConfig.php).
--   **google/recaptcha**: An instance of Google's [`ReCaptcha`][class-recaptcha].
 
 
 
