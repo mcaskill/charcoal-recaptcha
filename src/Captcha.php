@@ -6,13 +6,13 @@ use RuntimeException;
 use InvalidArgumentException;
 
 // From PSR-7
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface as HttpRequest;
+use Psr\Http\Message\ResponseInterface as HttpResponse;
 
 // From Google
-use ReCaptcha\ReCaptcha as ReCaptchaClient;
-use ReCaptcha\Response as ReCaptchaResponse;
+use ReCaptcha\ReCaptcha;
+use ReCaptcha\RequestMethod as ApiRequest;
+use ReCaptcha\Response as ApiResponse;
 
 // From 'charcoal-config'
 use Charcoal\Config\ConfigurableTrait;
@@ -41,14 +41,14 @@ class Captcha
     /**
      * Store the ReCaptcha client.
      *
-     * @var ReCaptchaClient
+     * @var ReCaptcha
      */
     private $client;
 
     /**
      * Store the last ReCaptcha response.
      *
-     * @var ReCaptchaResponse
+     * @var ApiResponse
      */
     private $lastResponse;
 
@@ -65,15 +65,15 @@ class Captcha
     /**
      * Execute Middleware
      *
-     * @param  ServerRequestInterface $request  A PSR-7 compatible Request instance.
-     * @param  ResponseInterface      $response A PSR-7 compatible Response instance.
-     * @param  callable               $next     Next callable middleware.
+     * @param  HttpRequest  $request  A PSR-7 compatible Request instance.
+     * @param  HttpResponse $response A PSR-7 compatible Response instance.
+     * @param  callable     $next     Next callable middleware.
      * @throws InvalidArgumentException If the CAPTCHA is invalid.
-     * @return ResponseInterface
+     * @return HttpResponse
      */
     public function __invoke(
-        ServerRequestInterface $request,
-        ResponseInterface $response,
+        HttpRequest $request,
+        HttpResponse $response,
         callable $next
     ) {
         $valid = $this->verifyRequest($request);
@@ -87,11 +87,10 @@ class Captcha
     }
 
     /**
-     * Retrieve a new ConfigInterface instance for the object.
+     * Create a new CaptchaConfig instance.
      *
-     * @see    \Charcoal\Config\AbstractConfig::__construct()
      * @param  array|null $data Optional data to pass to the new ConfigInterface instance.
-     * @return self
+     * @return CaptchaConfig
      */
     protected function createConfig($data = null)
     {
@@ -101,7 +100,7 @@ class Captcha
     /**
      * Retrieve the ReCaptcha client.
      *
-     * @return ReCaptchaClient
+     * @return ReCaptcha
      */
     public function client()
     {
@@ -111,10 +110,10 @@ class Captcha
     /**
      * Set the reCAPTCHA client.
      *
-     * @param  ReCaptchaClient $client The CAPTCHA service.
+     * @param  ReCaptcha $client The CAPTCHA service.
      * @return void
      */
-    private function setClient(ReCaptchaClient $client)
+    private function setClient(ReCaptcha $client)
     {
         $this->client = $client;
     }
@@ -136,10 +135,10 @@ class Captcha
     /**
      * Verify no-captcha response by Symfony Request.
      *
-     * @param  ServerRequestInterface $request A PSR-7 compatible Request instance.
+     * @param  HttpRequest $request A PSR-7 compatible Request instance.
      * @return boolean Returns TRUE if 'g-recaptcha-response' is valid, FALSE otherwise.
      */
-    public function verifyRequest(ServerRequestInterface $request)
+    public function verifyRequest(HttpRequest $request)
     {
         $token    = $this->extractTokenFromRequest($request);
         $remoteIp = $this->extractRemoteIpFromRequest($request);
@@ -150,10 +149,10 @@ class Captcha
     /**
      * Extract the user response token, provided by Google reCAPTCHA, from the server request.
      *
-     * @param  ServerRequestInterface $request A PSR-7 compatible Request instance.
+     * @param  HttpRequest $request A PSR-7 compatible Request instance.
      * @return string|null Returns the user response token or NULL.
      */
-    private function extractTokenFromRequest(ServerRequestInterface $request)
+    private function extractTokenFromRequest(HttpRequest $request)
     {
         $key = $this->config('input_key');
 
@@ -179,10 +178,10 @@ class Captcha
     /**
      * Extract the remote IP address from the server request.
      *
-     * @param  ServerRequestInterface $request A PSR-7 compatible Request instance.
+     * @param  HttpRequest $request A PSR-7 compatible Request instance.
      * @return string|null Returns the remote IP address or NULL.
      */
-    private function extractRemoteIpFromRequest(ServerRequestInterface $request)
+    private function extractRemoteIpFromRequest(HttpRequest $request)
     {
         if (is_callable([ $request, 'getServerParam' ])) {
             return $request->getServerParam('REMOTE_ADDR');
@@ -196,7 +195,7 @@ class Captcha
      * Retrieve the response object (if any) response object from the last CAPTCHA test.
      *
      * @throws RuntimeException If the CAPTCHA was not tested.
-     * @return ReCaptchaResponse
+     * @return ApiResponse
      */
     public function getLastResponse()
     {
