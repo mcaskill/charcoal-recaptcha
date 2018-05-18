@@ -50,16 +50,26 @@ class CaptchaConfig extends AbstractConfig
         return [
             'input_key'   => static::DEFAULT_INPUT_PARAM_KEY,
             'public_key'  => '',
-            'private_key' => ''
+            'private_key' => '',
         ];
     }
 
     /**
-     * Define the HTTP parameter key of the user response token to validate.
+     * Retrieve the HTTP parameter key of the user response token to validate.
+     *
+     * @return string
+     */
+    public function inputKey()
+    {
+        return $this->inputKey;
+    }
+
+    /**
+     * Set the HTTP parameter key of the user response token to validate.
      *
      * @param  string $key The parameter key on an HTTP request to lookup.
      * @throws InvalidArgumentException If the parameter key is not a string.
-     * @return CaptchaConfig Chainable
+     * @return self
      */
     public function setInputKey($key)
     {
@@ -71,18 +81,7 @@ class CaptchaConfig extends AbstractConfig
         }
 
         $this->inputKey = $key;
-
         return $this;
-    }
-
-    /**
-     * Retrieve the HTTP parameter key of the user response token to validate.
-     *
-     * @return string
-     */
-    public function inputKey()
-    {
-        return $this->inputKey;
     }
 
     /**
@@ -112,7 +111,6 @@ class CaptchaConfig extends AbstractConfig
         }
 
         $this->publicKey = $key;
-
         return $this;
     }
 
@@ -143,7 +141,6 @@ class CaptchaConfig extends AbstractConfig
         }
 
         $this->privateKey = $key;
-
         return $this;
     }
 }
