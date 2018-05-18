@@ -164,6 +164,7 @@ This package is inspired by:
 [charcoal/app]:        https://packagist.org/packages/locomotivemtl/charcoal-app
 [charcoal/translator]: https://packagist.org/packages/locomotivemtl/charcoal-translator
 
+[pimple]:              https://packagist.org/packages/pimple/pimple
 [google/recaptcha]:    https://packagist.org/packages/google/recaptcha
 [class-recaptcha]:     https://github.com/google/recaptcha/blob/1.1.3/src/ReCaptcha/ReCaptcha.php
 
