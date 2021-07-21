@@ -12,6 +12,6 @@ class CaptchaAwareObject
 {
     use CaptchaAwareTrait {
         CaptchaAwareTrait::setCaptcha as public;
-        CaptchaAwareTrait::captcha as public;
+        CaptchaAwareTrait::getCaptcha as public;
     }
 }

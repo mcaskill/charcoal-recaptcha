@@ -2,11 +2,8 @@
 
 namespace Charcoal\Tests;
 
-// From 'google/recaptcha'
-use ReCaptcha\ReCaptcha;
-
-// From 'mcaskill/charcoal-recaptcha'
 use Charcoal\ReCaptcha\Captcha;
+use ReCaptcha\ReCaptcha;
 
 /**
  * Captcha Factory Utilities
@@ -14,7 +11,7 @@ use Charcoal\ReCaptcha\Captcha;
 trait CaptchaFactoryTrait
 {
     /**
-     * @var array
+     * @var array<string, string>
      */
     private $config = [
         'public_key'  => '{site-key}',
@@ -22,27 +19,27 @@ trait CaptchaFactoryTrait
     ];
 
     /**
-     * Create the Captcha adapter.
-     *
-     * @param  ReCaptcha|null $client The ReCaptcha client.
-     * @return Captcha
-     */
-    protected function createAdapter(ReCaptcha $client = null)
-    {
-        return new Captcha([
-            'config' => $this->getConfig(),
-            'client' => $client === null ? $this->createClient() : $client,
-        ]);
-    }
-
-    /**
      * Create the ReCaptcha client.
      *
      * @return ReCaptcha
      */
-    protected function createClient()
+    protected function createClient(): ReCaptcha
     {
         return new ReCaptcha($this->getConfig('private_key'));
+    }
+
+    /**
+     * Create the service wrapper.
+     *
+     * @param  ReCaptcha|null $client The ReCaptcha client.
+     * @return Captcha
+     */
+    protected function createWrapper(ReCaptcha $client = null): Captcha
+    {
+        return new Captcha(
+            $this->getConfig(),
+            ($client ?? $this->createClient())
+        );
     }
 
     /**
@@ -51,7 +48,7 @@ trait CaptchaFactoryTrait
      * @param  string|null $key If provided, return the key's value.
      * @return mixed
      */
-    protected function getConfig($key = null)
+    protected function getConfig(string $key = null)
     {
         if ($key !== null) {
             if (isset($this->config[$key])) {

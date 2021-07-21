@@ -27,15 +27,21 @@ See [`composer.json`](composer.json) for depenencides.
 ## What's inside?
 
 -   **`Charcoal\ReCaptcha\CaptchaServiceProvider`**: 
-    Pimple service provider.
+    A Pimple service provider.
 -   **`Charcoal\ReCaptcha\CaptchaConfig`**: 
-    Configuring the CAPTCHA service.
+    A configuration repository for the CAPTCHA service wrapper.
 -   **`Charcoal\ReCaptcha\CaptchaAwareTrait`**: 
-    Convenient trait for interfacing with the CAPTCHA service.
+    Convenient trait for interfacing with the CAPTCHA service wrapper.
+-   **`Charcoal\ReCaptcha\CaptchaInterface`**: 
+    Contract defining the core features of the CAPTCHA service wrapper.
 -   **`Charcoal\ReCaptcha\Captcha`**: 
-    Service that handles the reCAPTCHA client.
+    Service wrapper of the reCAPTCHA client.
 -   **`Charcoal\ReCaptcha\LocalizedCaptcha`**: 
-    [Translator-aware][charcoal/translator] variant of the service.
+    A variant of the service wrapper that is [Translator-aware][charcoal/translator].
+-   **`Charcoal\ReCaptcha\HtmlAwareCaptcha`**: 
+    A decorator of the service wrapper providing basic support for the JS API and HTML element.
+-   **`Charcoal\ReCaptcha\HttpAwareCaptcha`**: 
+    A decorator of the service wrapper providing basic support for verifying challenges using a [PSR-7] HTTP Request.
 
 
 
@@ -43,59 +49,86 @@ See [`composer.json`](composer.json) for depenencides.
 
 ```php
 use Charcoal\ReCaptcha\Captcha;
+use Charcoal\ReCaptcha\HttpAwareCaptcha;
+use Charcoal\ReCaptcha\HtmlAwareCaptcha;
 
 $captcha = new Captcha([
-    'config' => [
-        'public_key'  => '…',
-        'private_key' => '…',
-    ]
+    'public_key'  => '…',
+    'private_key' => '…',
 ]);
 
-// As middleware
-$app->post('/signup', '…')->add($captcha);
+// Customize verification
+$captcha->getClient()
+    ->setExpectedHostname('recaptcha-demo.appspot.com')
+    ->setExpectedAction('homepage')
+    ->setScoreThreshold(0.5);
 
 // As standalone, with direct user input
 $captcha->verify($input, $ip);
 
+// Decorate with PSR-7 support
+$captcha = new HttpAwareCaptcha($captcha);
+
+// As middleware
+$app->post('/signup', '…')->add($captcha);
+
 // With a PSR-7 request
 $captcha->verifyRequest($request);
 
+// Decorate with HTML support
+$captcha = new HtmlAwareCaptcha($captcha);
+
 // Display the widget in your views
-echo $captcha->display(
-    [
-        'data-theme' => 'dark',
-        'data-type' =>  'audio',
-    ],
-    [
-        'hl' => 'fr'
-    ]
-);
+echo $captcha->display([
+    'data-theme' => 'dark',
+    'data-type' =>  'audio',
+], [
+    'hl' => 'fr',
+]);
 ```
 
-By default, the `Captcha` adapter will defer the instantiation of [`ReCaptcha`][class-recaptcha] until the first verification request.
+```php
+use Charcoal\ReCaptcha\LocalizedCaptcha;
+use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\Loader\XliffFileLoader;
+
+$settings = [
+    'public_key'  => '…',
+    'private_key' => '…',
+];
+
+$translator = new Translator('fr');
+$translator->addLoader('xliff', new XliffFileLoader());
+$translator->addResource('xliff', '…/charcoal-recaptcha/translations', 'fr', 'validators');
+
+$captcha = new LocalizedCaptcha($translator, $settings);
+
+$captcha->verify($input);
+```
+
+By default, the `Captcha` wrapper will defer the instantiation of [`ReCaptcha`][class-recaptcha] until the first verification request.
 
 
 
-### Custom ReCaptcha Class
+### Custom `ReCaptcha` class
 
 The `ReCaptcha` class be swapped using the `client_class` option.
 
 ```php
 use Charcoal\ReCaptcha\Captcha;
-use MyApp\ MyCustomReCaptcha;
+use MyApp\MyCustomReCaptcha;
 
-$captcha = new Captcha([
-    'config' => [
-        'public_key'  => '…',
-        'private_key' => '…',
-    ],
-    'client_class' =>  MyCustomReCaptcha::class
-]);
+$settings = [
+    'public_key'  => '…',
+    'private_key' => '…',
+];
+
+$captcha = new Captcha($settings, MyCustomReCaptcha::class);
 ```
 
 
 
-### Custom ReCaptcha Instance
+### Custom `ReCaptcha` instance
 
 An instance of the `ReCaptcha` class can be assigned using the `client` option.
 
@@ -104,15 +137,14 @@ use Charcoal\ReCaptcha\Captcha;
 use ReCaptcha\ReCaptcha;
 use ReCaptcha\RequestMethod\CurlPost;
 
-$client = new ReCaptcha('…', new CurlPost());
+$settings = [
+    'public_key'  => '…',
+    'private_key' => '…',
+];
 
-$captcha = new Captcha([
-    'config' => [
-        'public_key'  => '…',
-        'private_key' => '…',
-    ],
-    'client' => $client
-]);
+$client = new ReCaptcha($settings['private_key'], new CurlPost());
+
+$captcha = new Captcha($settings, $client);
 ```
 
 
@@ -131,7 +163,10 @@ If [`CaptchaServiceProvider`](src/CaptchaServiceProvider.php) is used, the follo
 
 ### Services
 
--   **charcoal/captcha**: An instance of [`Captcha`](src/CaptchaConfig.php).
+-   **charcoal/captcha**: An instance of [`HtmlAwareCaptcha`](src/HtmlAwareCaptcha.php).
+    If the the PSR-7 `ServerRequestInterface` class exists, it will also use
+    [`HttoAwareCaptcha`](src/HttoAwareCaptcha.php). If a `translator` service
+    is present, it will use [`LocalizedCaptcha`](src/LocalizedCaptcha.php).
 
 
 
@@ -145,12 +180,22 @@ Via Charcoal configuration file:
         "google": {
             "recaptcha": {
                 "public_key": "…",
-                "private_key": "…"
+                "private_key": "…",
+                "action": "…",
+                "hostname": "…",
+                "apk_package_name": "…",
+                "score_threshold": 0.6,
+                "challenge_timeout": 90
             }
         },
     },
     "service_providers": {
         "charcoal/re-captcha/captcha": {}
+    },
+    "translator": {
+        "paths": [
+            "vendor/mcaskill/charcoal-recaptcha/translations/"
+        ]
     }
 }
 ```
@@ -200,9 +245,10 @@ This package is inspired by:
 [charcoal/app]:        https://packagist.org/packages/locomotivemtl/charcoal-app
 [charcoal/translator]: https://packagist.org/packages/locomotivemtl/charcoal-translator
 
+[PSR-7]:               https://packagist.org/packages/psr/http-message
 [pimple]:              https://packagist.org/packages/pimple/pimple
 [google/recaptcha]:    https://packagist.org/packages/google/recaptcha
-[class-recaptcha]:     https://github.com/google/recaptcha/blob/1.1.3/src/ReCaptcha/ReCaptcha.php
+[class-recaptcha]:     https://github.com/google/recaptcha/blob/1.2.4/src/ReCaptcha/ReCaptcha.php
 
 [license-charcoal]:    https://github.com/locomotivemtl/charcoal-app/blob/master/LICENSE
 [license-recaptcha]:   https://github.com/google/recaptcha/blob/master/LICENSE

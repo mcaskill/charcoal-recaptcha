@@ -7,5 +7,5 @@
     <config name="show_progress" value="1" />
     <config name="ignore_warnings_on_exit" value="1" />
 
-    <rule ref="PSR2" />
+    <rule ref="PSR12" />
 </ruleset>

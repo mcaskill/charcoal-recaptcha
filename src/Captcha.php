@@ -1,42 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Charcoal\ReCaptcha;
 
-use RuntimeException;
-use InvalidArgumentException;
-
-// From PSR-7
-use Psr\Http\Message\ServerRequestInterface as HttpRequest;
-use Psr\Http\Message\ResponseInterface as HttpResponse;
-
-// From Google
+use Charcoal\ReCaptcha\CaptchaConfig as Config;
+use Charcoal\ReCaptcha\CaptchaInterface;
+use Charcoal\ReCaptcha\Exceptions\InvalidArgumentException;
+use Charcoal\ReCaptcha\Exceptions\UnexpectedValueException;
+use Closure;
 use ReCaptcha\ReCaptcha;
-use ReCaptcha\RequestMethod as ApiRequest;
 use ReCaptcha\Response as ApiResponse;
+use Throwable;
 
-// From 'charcoal-config'
-use Charcoal\Config\ConfigurableTrait;
-
-// From 'charcoal-recaptcha'
-use Charcoal\ReCaptcha\CaptchaConfig;
+use function is_array;
+use function is_null;
+use function is_object;
+use function is_string;
+use function sprintf;
+use function strtr;
 
 /**
- * Service wrapper for the Google reCAPTCHA client
+ * Simple service wrapper for the Google reCAPTCHA client
  *
  * This class can be used as a PSR-7 middleware or as an object in your service layer.
  */
-class Captcha
+class Captcha implements CaptchaInterface
 {
-    use ConfigurableTrait {
-        ConfigurableTrait::setConfig as private;
-    }
-
     /**
-     * The JavaScript API for Google reCAPTCHA.
+     * Store the settings.
      *
-     * @const string
+     * @var Config
      */
-    const CLIENT_API = 'https://www.google.com/recaptcha/api.js';
+    private $config;
 
     /**
      * Store the ReCaptcha client.
@@ -50,7 +46,7 @@ class Captcha
      *
      * @var string
      */
-    protected $clientClass = ReCaptcha::class;
+    private $clientClass = ReCaptcha::class;
 
     /**
      * Store the last ReCaptcha response.
@@ -60,68 +56,35 @@ class Captcha
     private $lastResponse;
 
     /**
-     * @param  array $data The constructor options.
-     * @return void
+     * @param  Config|array|object   $config The service wrapper settings.
+     * @param  ReCaptcha|string|null $client Optional. The reCAPTCHA service instance or class name.
+     * @throws InvalidArgumentException If the $config is invalid.
      */
-    public function __construct(array $data)
+    public function __construct($config, $client = null)
     {
-        $this->setConfig($data['config']);
-
-        if (isset($data['client'])) {
-            $this->setClient($data['client']);
-        }
-
-        if (isset($data['client_class'])) {
-            $this->setClientClass($data['client_class']);
-        }
-    }
-
-    /**
-     * Execute Middleware
-     *
-     * @param  HttpRequest  $request  A PSR-7 compatible Request instance.
-     * @param  HttpResponse $response A PSR-7 compatible Response instance.
-     * @param  callable     $next     Next callable middleware.
-     * @throws InvalidArgumentException If the CAPTCHA is invalid.
-     * @return HttpResponse
-     */
-    public function __invoke(
-        HttpRequest $request,
-        HttpResponse $response,
-        callable $next
-    ) {
-        $valid = $this->verifyRequest($request);
-
-        if ($valid) {
-            return $next($request, $response);
+        if ($config instanceof Config) {
+            $this->config = $config;
+        } elseif (is_array($config) || is_object($config)) {
+            $this->config = new Config($config);
         } else {
-            $messages = $this->getLastErrorMessages();
-            throw new InvalidArgumentException(array_pop($messages));
+            throw new InvalidArgumentException(sprintf(
+                'Expected first parameter to be %s',
+                Config::class
+            ));
         }
-    }
 
-    /**
-     * Create a new CaptchaConfig instance.
-     *
-     * @param  array|null $data Optional data to pass to the new ConfigInterface instance.
-     * @return CaptchaConfig
-     */
-    protected function createConfig($data = null)
-    {
-        return new CaptchaConfig($data);
-    }
-
-    /**
-     * Create a new ReCaptcha instance.
-     *
-     * @param  string  $secret Shared secret between site and reCAPTCHA server.
-     * @param  mixed[] $args   Additional {@see \ReCaptcha\ReCaptcha::__construct() constructor parameters}.
-     * @return ReCaptcha
-     */
-    protected function createClient($secret, ...$args)
-    {
-        array_unshift($args, $secret);
-        return new $this->clientClass(...$args);
+        if ($client) {
+            if ($client instanceof ReCaptcha) {
+                $this->client = $client;
+            } elseif (is_string($client)) {
+                $this->clientClass = $client;
+            } else {
+                throw new InvalidArgumentException(sprintf(
+                    'Expected second parameter to be %s',
+                    ReCaptcha::class
+                ));
+            }
+        }
     }
 
     /**
@@ -129,175 +92,100 @@ class Captcha
      *
      * @return ReCaptcha
      */
-    public function client()
+    public function getClient(): ReCaptcha
     {
-        if ($this->client === null) {
-            $this->client = $this->createClient($this->config('private_key'));
+        if (is_null($this->client)) {
+            $this->client = $this->createClient();
         }
 
         return $this->client;
     }
 
     /**
-     * Set the reCAPTCHA client.
+     * Retrieve the CAPTCHA configset or a specific key from the container.
      *
-     * @param  ReCaptcha $client The CAPTCHA service.
-     * @return void
+     * @param  string|null $key     Optional. If provided, the data key to retrieve.
+     * @param  mixed       $default Optional. The fallback value to return if $key does not exist.
+     * @return mixed If $key is NULL, the Config object is returned.
+     *     If $key is given, its value on the Config object is returned.
+     *     If the value of $key is NULL, the value of $default is returned.
      */
-    private function setClient(ReCaptcha $client)
+    public function getConfig(string $key = null, $default = null)
     {
-        $this->client = $client;
-    }
-
-    /**
-     * Changes the specific client class generated by the Captcha wrapper.
-     *
-     * Using this function developers can have the wrapper generate a custom ReCaptcha object.
-     *
-     * @param  string $class The ReCaptcha class name.
-     * @throws InvalidArgumentException When passed an invalid or nonexistant class.
-     * @return void
-     */
-    private function setClientClass($class)
-    {
-        if (!class_exists($class)) {
-            throw new InvalidArgumentException(
-                sprintf('Client class %s does not exist', $class)
-            );
+        if (is_string($key)) {
+            if ($this->config->has($key)) {
+                return $this->config->get($key);
+            } elseif ($default instanceof Closure) {
+                return $default();
+            } else {
+                return $default;
+            }
         }
 
-        $interfaces = class_implements($class, true);
-
-        if (!in_array(ReCaptcha::class, $interfaces)) {
-            throw new InvalidArgumentException(sprintf(
-                'Client class %s must inherit from %s',
-                $class,
-                ReCaptcha::class
-            ));
-        }
-
-        $this->clientClass = $class;
+        return $this->config;
     }
 
     /**
      * Call the reCAPTCHA API to verify whether the user passes CAPTCHA test.
      *
-     * @param  mixed  $input    The value of 'g-recaptcha-response' in the submitted form.
-     * @param  string $remoteIp The end user's IP address.
-     * @return boolean Returns TRUE if 'g-recaptcha-response' is valid, FALSE otherwise.
+     * @param  string      $input    The value of 'g-recaptcha-response' in the submitted form.
+     * @param  string|null $remoteIp Optional. The end user's IP address.
+     * @return bool Returns TRUE if 'g-recaptcha-response' is valid, FALSE otherwise.
      */
-    public function verify($input, $remoteIp)
+    public function verify(string $input, ?string $remoteIp = null): bool
     {
-        $this->lastResponse = $this->client()->verify($input, $remoteIp);
+        $this->lastResponse = $this->getClient()->verify($input, $remoteIp);
 
         return $this->lastResponse->isSuccess();
     }
 
     /**
-     * Verify no-captcha response by Symfony Request.
+     * Retrieve the ReCaptcha response from the last CAPTCHA verification.
      *
-     * @param  HttpRequest $request A PSR-7 compatible Request instance.
-     * @return boolean Returns TRUE if 'g-recaptcha-response' is valid, FALSE otherwise.
+     * @return ?ApiResponse
      */
-    public function verifyRequest(HttpRequest $request)
+    public function getLastResponse(): ?ApiResponse
     {
-        $token    = $this->extractTokenFromRequest($request);
-        $remoteIp = $this->extractRemoteIpFromRequest($request);
-
-        return $this->verify($token, $remoteIp);
+        return $this->lastResponse;
     }
 
     /**
-     * Extract the user response token, provided by Google reCAPTCHA, from the server request.
+     * Retrieve the error codes from the last CAPTCHA verification.
      *
-     * @param  HttpRequest $request A PSR-7 compatible Request instance.
-     * @return string|null Returns the user response token or NULL.
+     * @return ?(string|int)[]
      */
-    private function extractTokenFromRequest(HttpRequest $request)
+    public function getLastErrorCodes(): ?iterable
     {
-        $key = $this->config('input_key');
-
-        if (is_callable([ $request, 'getParam' ])) {
-            return $request->getParam($key);
-        }
-
-        $postParams = $request->getParsedBody();
-        if (is_array($postParams) && isset($postParams[$key])) {
-            return $postParams[$key];
-        } elseif (is_object($postParams) && property_exists($postParams, $key)) {
-            return $postParams->$key;
-        }
-
-        $getParams = $request->getQueryParams();
-        if (isset($getParams[$key])) {
-            return $getParams[$key];
+        $response = $this->getLastResponse();
+        if ($response) {
+            return $response->getErrorCodes();
         }
 
         return null;
     }
 
     /**
-     * Extract the remote IP address from the server request.
+     * Retrieve the error messages from the last CAPTCHA verification.
      *
-     * @param  HttpRequest $request A PSR-7 compatible Request instance.
-     * @return string|null Returns the remote IP address or NULL.
+     * @return ?string[]
      */
-    private function extractRemoteIpFromRequest(HttpRequest $request)
-    {
-        if (is_callable([ $request, 'getServerParam' ])) {
-            return $request->getServerParam('REMOTE_ADDR');
-        }
-
-        $serverParams = $request->getServerParams();
-        return isset($serverParams['REMOTE_ADDR']) ? $serverParams['REMOTE_ADDR'] : null;
-    }
-
-    /**
-     * Retrieve the response object (if any) response object from the last CAPTCHA test.
-     *
-     * @throws RuntimeException If the CAPTCHA was not tested.
-     * @return ApiResponse
-     */
-    public function getLastResponse()
-    {
-        if ($this->lastResponse === null) {
-            throw new RuntimeException(sprintf(
-                'CAPTCHA Untested'
-            ));
-        }
-
-        return $this->lastResponse;
-    }
-
-    /**
-     * Retrieve the error codes from the last CAPTCHA test (if any).
-     *
-     * @return array
-     */
-    public function getLastErrorCodes()
-    {
-        return $this->getLastResponse()->getErrorCodes();
-    }
-
-    /**
-     * Retrieve the error messages from the last CAPTCHA test (if any).
-     *
-     * @return array
-     */
-    public function getLastErrorMessages()
+    public function getLastErrorMessages(): ?iterable
     {
         $codes = $this->getLastErrorCodes();
+        if ($codes) {
+            return $this->getErrorMessages($codes);
+        }
 
-        return $this->getErrorMessages($codes);
+        return null;
     }
 
     /**
      * Retrieve the messages for the given error codes.
      *
-     * @param  array $codes The error codes to resolve.
-     * @return array
+     * @param  (string|int)[] $codes The error codes to resolve.
+     * @return string[]
      */
-    protected function getErrorMessages(array $codes)
+    public function getErrorMessages(iterable $codes): iterable
     {
         $messages = [];
         foreach ($codes as $code) {
@@ -311,10 +199,10 @@ class Captcha
      * Retrieve the message for the given error code.
      *
      * @link   https://developers.google.com/recaptcha/docs/verify
-     * @param  string $code An error code to resolve.
-     * @return array
+     * @param  string|int $code An error code to resolve.
+     * @return string
      */
-    protected function getErrorMessage($code)
+    public function getErrorMessage($code): string
     {
         switch ($code) {
             case 'missing-input-secret':
@@ -330,110 +218,70 @@ class Captcha
             case 'invalid-input':
             case 'invalid-input-response':
                 return 'The CAPTCHA response parameter is invalid or malformed.';
-
-            default:
-                return strtr('Unknown reCAPTCHA error: {code}', [
-                    '{code}' => $code
-                ]);
         }
+
+        return strtr('Unknown reCAPTCHA error: {code}', [
+            '{code}' => $code,
+        ]);
     }
 
     /**
-     * Render the HTML script and widget.
+     * Create a new ReCaptcha instance.
      *
-     * @param  array|boolean|null $attributes  The HTML attributes for the 'g-recaptcha' tag.
-     * @param  array|boolean|null $queryParams The query parameters for the JavaScript API link.
+     * @link   \ReCaptcha\ReCaptcha::__construct()
+     * @throws UnexpectedValueException If the class is invalid.
+     * @return ReCaptcha
+     */
+    protected function createClient(): ReCaptcha
+    {
+        $secret = $this->config->get('private_key');
+        $class  = $this->getClientClass();
+
+        try {
+            $client = new $class($secret);
+            $client = $this->configureClient($client);
+        } catch (Throwable $t) {
+            throw new UnexpectedValueException(sprintf(
+                'Client class %s could not be prepared',
+                $class
+            ), 0, $t);
+        }
+
+        return $client;
+    }
+
+    /**
+     * Configure a ReCaptcha instance.
+     *
+     * @param  ReCaptcha $client A ReCaptcha instance.
+     * @return ReCaptcha
+     */
+    protected function configureClient(ReCaptcha $client): ReCaptcha
+    {
+        $configure = [
+            'hostname'          => 'setExpectedHostname',
+            'apk_package_name'  => 'setExpectedApkPackageName',
+            'action'            => 'setExpectedAction',
+            'score_threshold'   => 'setScoreThreshold',
+            'challenge_timeout' => 'setChallengeTimeout',
+        ];
+
+        foreach ($configure as $key => $method) {
+            if ($this->config->has($key)) {
+                $client->{$method}($this->config->get($key));
+            }
+        }
+
+        return $client;
+    }
+
+    /**
+     * Retrieves the ReCaptcha client class.
+     *
      * @return string
      */
-    public function display($attributes = true, $queryParams = true)
+    protected function getClientClass(): string
     {
-        $html = '';
-
-        if ($queryParams) {
-            if (!is_array($queryParams)) {
-                $queryParams = [];
-            }
-
-            $html .= $this->getJsHtml($queryParams);
-        }
-
-        if ($attributes) {
-            if (!is_array($attributes)) {
-                $attributes = [];
-            }
-
-            if ($html) {
-                $html .= "\n";
-            }
-
-            $html .= $this->getWidgetHtml($attributes);
-        }
-
-        return $html;
-    }
-
-    /**
-     * Render the HTML widget.
-     *
-     * @link   https://developers.google.com/recaptcha/docs/display
-     * @param  array|null $attributes The HTML attributes for the 'g-recaptcha' tag.
-     * @return string
-     */
-    public function getWidgetHtml(array $attributes = [])
-    {
-        $attributes['data-sitekey'] = $this->config('public_key');
-
-        return '<div class="g-recaptcha"' . $this->buildAttributes($attributes) . '></div>';
-    }
-
-    /**
-     * Build HTML attributes.
-     *
-     * @param  array $attributes Associative array of attribute names and values.
-     * @return string Returns a string of HTML attributes.
-     */
-    protected function buildAttributes(array $attributes)
-    {
-        $html = [];
-        foreach ($attributes as $key => $value) {
-            $html[] = $key . '="' . $value . '"';
-        }
-
-        return $html ? ' ' . implode(' ', $html) : '';
-    }
-
-    /**
-     * Create the HTML `<script>` element to load the JavaScript API.
-     *
-     * @param  array|null $query Array of query string arguments to customize the API.
-     * @return string Returns an HTML `<script>` element.
-     */
-    public function getJsHtml(array $query = null)
-    {
-        return sprintf(
-            '<script src="%s" async defer></script>',
-            $this->getJsUri($query)
-        );
-    }
-
-    /**
-     * Create the URI to the JavaScript API with parameters.
-     *
-     * @link   https://developers.google.com/recaptcha/docs/display
-     * @param  array $query Array of query string arguments to customize the API.
-     * @return string Returns a URI.
-     */
-    public function getJsUri(array $query = null)
-    {
-        if (isset($query['lang'])) {
-            $query['hl'] = $query['lang'];
-            unset($query['lang']);
-        }
-
-        if ($query) {
-            return static::CLIENT_API . '?' . http_build_query($query);
-        } else {
-            return static::CLIENT_API;
-        }
+        return $this->clientClass;
     }
 }

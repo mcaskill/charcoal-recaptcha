@@ -4,6 +4,10 @@ composer.phar
 composer.lock
 /vendor/
 
+# Caching
+
+.phpunit.result.cache
+
 # Logging
 
 *.log

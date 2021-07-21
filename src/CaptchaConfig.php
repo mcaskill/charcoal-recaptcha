@@ -1,14 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Charcoal\ReCaptcha;
 
-use InvalidArgumentException;
-
-// From 'charcoal-config'
 use Charcoal\Config\AbstractConfig;
 
 /**
- * Google reCAPTCHA Configuration
+ * Service settings for the Google reCAPTCHA client
  */
 class CaptchaConfig extends AbstractConfig
 {
@@ -17,49 +16,76 @@ class CaptchaConfig extends AbstractConfig
      *
      * @const string
      */
-    const DEFAULT_INPUT_PARAM_KEY = 'g-recaptcha-response';
+    public const DEFAULT_INPUT_PARAM_KEY = 'g-recaptcha-response';
 
     /**
      * Form control name and POST parameter when the user submits the form on your site.
      *
      * @var string
      */
-    private $inputKey;
+    private $inputKey = self::DEFAULT_INPUT_PARAM_KEY;
 
     /**
      * The site key used for displaying the reCAPTCHA widget.
      *
      * @var string
      */
-    private $publicKey;
+    private $publicKey = '';
 
     /**
      * The secret key shared between your site and reCAPTCHA.
      *
      * @var string
      */
-    private $privateKey;
+    private $privateKey = '';
 
     /**
-     * Retrieve the default reCAPTCHA service settings.
+     * The action to match against during verification.
      *
-     * @return array
+     * This should be set per page.
+     *
+     * @var string|null
      */
-    public function defaults()
-    {
-        return [
-            'input_key'   => static::DEFAULT_INPUT_PARAM_KEY,
-            'public_key'  => '',
-            'private_key' => '',
-        ];
-    }
+    private $action;
+
+    /**
+     * The hostname to match against during verification.
+     *
+     * This should be without a protocol or trailing slash, e.g. `www.google.com`.
+     *
+     * @var string|null
+     */
+    private $hostname;
+
+    /**
+     * The APK package name to match against during verification.
+     *
+     * @var string|null
+     */
+    private $apkPackageName;
+
+    /**
+     * The threshold to meet or exceed during verification.
+     *
+     * Threshold should be a float between 0 and 1 which will be tested as response >= threshold.
+     *
+     * @var float|null
+     */
+    private $scoreThreshold;
+
+    /**
+     * The timeout in seconds to test against the challenge timestamp during verification.
+     *
+     * @var int|null
+     */
+    private $challengeTimeout;
 
     /**
      * Retrieve the HTTP parameter key of the user response token to validate.
      *
      * @return string
      */
-    public function inputKey()
+    public function getInputKey(): string
     {
         return $this->inputKey;
     }
@@ -68,20 +94,11 @@ class CaptchaConfig extends AbstractConfig
      * Set the HTTP parameter key of the user response token to validate.
      *
      * @param  string $key The parameter key on an HTTP request to lookup.
-     * @throws InvalidArgumentException If the parameter key is not a string.
-     * @return self
+     * @return void
      */
-    public function setInputKey($key)
+    public function setInputKey(string $key): void
     {
-        if (!is_string($key)) {
-            throw new InvalidArgumentException(sprintf(
-                'The parameter key must be a string, received %s',
-                is_object($key) ? get_class($key) : gettype($key)
-            ));
-        }
-
         $this->inputKey = $key;
-        return $this;
     }
 
     /**
@@ -89,7 +106,7 @@ class CaptchaConfig extends AbstractConfig
      *
      * @return string
      */
-    public function publicKey()
+    public function getPublicKey(): string
     {
         return $this->publicKey;
     }
@@ -98,20 +115,11 @@ class CaptchaConfig extends AbstractConfig
      * Set the public key used for displaying the reCAPTCHA widget.
      *
      * @param  string $key The public key.
-     * @throws InvalidArgumentException If the public key is not a string.
-     * @return self
+     * @return void
      */
-    public function setPublicKey($key)
+    public function setPublicKey(string $key): void
     {
-        if (!is_string($key)) {
-            throw new InvalidArgumentException(sprintf(
-                'The public key must be a string, received %s',
-                is_object($key) ? get_class($key) : gettype($key)
-            ));
-        }
-
         $this->publicKey = $key;
-        return $this;
     }
 
     /**
@@ -119,7 +127,7 @@ class CaptchaConfig extends AbstractConfig
      *
      * @return string
      */
-    public function privateKey()
+    public function getPrivateKey(): string
     {
         return $this->privateKey;
     }
@@ -128,19 +136,115 @@ class CaptchaConfig extends AbstractConfig
      * Set the private key shared between your site and reCAPTCHA.
      *
      * @param  string $key The private key.
-     * @throws InvalidArgumentException If the private key is not a string.
-     * @return self
+     * @return void
      */
-    public function setPrivateKey($key)
+    public function setPrivateKey(string $key): void
     {
-        if (!is_string($key)) {
-            throw new InvalidArgumentException(sprintf(
-                'The private key must be a string, received %s',
-                is_object($key) ? get_class($key) : gettype($key)
-            ));
-        }
-
         $this->privateKey = $key;
-        return $this;
+    }
+
+    /**
+     * Retrieve the action to match against during verification.
+     *
+     * @return string
+     */
+    public function getAction(): string
+    {
+        return $this->action;
+    }
+
+    /**
+     * Set the action to match against during verification.
+     *
+     * @param  string $action The action.
+     * @return void
+     */
+    public function setAction(string $action): void
+    {
+        $this->action = $action;
+    }
+
+    /**
+     * Retrieve the hostname to match against during verification.
+     *
+     * @return string
+     */
+    public function getHostname(): string
+    {
+        return $this->hostname;
+    }
+
+    /**
+     * Set the hostname to match against during verification.
+     *
+     * @param  string $hostname The hostname.
+     * @return void
+     */
+    public function setHostname(string $hostname): void
+    {
+        $this->hostname = $hostname;
+    }
+
+    /**
+     * Retrieve the APK package name to match against during verification.
+     *
+     * @return string
+     */
+    public function getApkPackageName(): string
+    {
+        return $this->apkPackageName;
+    }
+
+    /**
+     * Set the APK package name to match against during verification.
+     *
+     * @param  string $apkPackageName The APK package name.
+     * @return void
+     */
+    public function setApkPackageName(string $apkPackageName): void
+    {
+        $this->apkPackageName = $apkPackageName;
+    }
+
+    /**
+     * Retrieve the threshold to meet or exceed during verification.
+     *
+     * @return float
+     */
+    public function getScoreThreshold(): float
+    {
+        return $this->scoreThreshold;
+    }
+
+    /**
+     * Set the threshold to meet or exceed during verification.
+     *
+     * @param  float $scoreThreshold The threshold.
+     * @return void
+     */
+    public function setScoreThreshold(float $scoreThreshold): void
+    {
+        $this->scoreThreshold = $scoreThreshold;
+    }
+
+    /**
+     * Retrieve the timeout in seconds to test against the challenge timestamp during verification.
+     *
+     * @return int
+     */
+    public function getChallengeTimeout(): int
+    {
+        return $this->challengeTimeout;
+    }
+
+    /**
+     * Set the timeout in seconds to test against the challenge timestamp during verification.
+     *
+     * @param  int $timeout The timeout in seconds.
+     * @return void
+     */
+    public function setChallengeTimeout(int $timeout): void
+    {
+        $this->challengeTimeout = $timeout;
     }
 }

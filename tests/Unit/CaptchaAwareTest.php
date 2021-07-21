@@ -2,13 +2,10 @@
 
 namespace Charcoal\Tests\Unit;
 
-// From 'google/recaptcha'
-use ReCaptcha\ReCaptcha;
-
-// From 'mcaskill/charcoal-recaptcha'
 use Charcoal\ReCaptcha\CaptchaAwareTrait;
 use Charcoal\Tests\AbstractTestCase;
 use Charcoal\Tests\Mock\CaptchaAwareObject;
+use ReCaptcha\ReCaptcha;
 
 /**
  * @coversDefaultClass \Charcoal\ReCaptcha\CaptchaAwareTrait
@@ -25,34 +22,34 @@ class CaptchaAwareTest extends AbstractTestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         $this->obj = new CaptchaAwareObject();
     }
 
     /**
      * @covers ::setCaptcha
-     * @covers ::captcha
+     * @covers ::getCaptcha
      *
      * @return void
      */
-    public function testCaptchaAwareness()
+    public function testCaptchaAwareness(): void
     {
-        $captcha = $this->createAdapter();
+        $captcha = $this->createWrapper();
 
         $this->obj->setCaptcha($captcha);
-        $this->assertSame($captcha, $this->obj->captcha());
+        $this->assertSame($captcha, $this->obj->getCaptcha());
     }
 
     /**
      * @expectedException        RuntimeException
      * @expectedExceptionMessage Missing Charcoal\ReCaptcha\Captcha adapter
      *
-     * @covers ::captcha
+     * @covers ::getCaptcha
      * @return void
      */
-    public function testMissingCaptcha()
+    public function testMissingCaptcha(): void
     {
-        $this->obj->captcha();
+        $this->obj->getCaptcha();
     }
 }
