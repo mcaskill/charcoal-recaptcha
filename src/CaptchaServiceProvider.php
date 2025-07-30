@@ -3,8 +3,7 @@
 namespace Charcoal\ReCaptcha;
 
 // From Pimple
-use Pimple\Container;
-use Pimple\ServiceProviderInterface;
+use DI\Container;
 
 // From Google
 use ReCaptcha\ReCaptcha;
@@ -17,7 +16,7 @@ use Charcoal\ReCaptcha\LocalizedCaptcha;
 /**
  * Google reCAPTCHA Service Provider
  */
-class CaptchaServiceProvider implements ServiceProviderInterface
+class CaptchaServiceProvider
 {
     /**
      * Register Google reCAPTCHA.
@@ -33,11 +32,11 @@ class CaptchaServiceProvider implements ServiceProviderInterface
          * @param  Container $container A container instance.
          * @return CaptchaConfig
          */
-        $container['charcoal/captcha/config'] = function (Container $container) {
-            $appConfig = $container['config'];
+        $container->set('charcoal/captcha/config', function (Container $container) {
+            $appConfig = $container->get('config');
 
             return new CaptchaConfig($appConfig['apis.google.recaptcha']);
-        };
+        });
 
         /**
          * Add the Charcoal reCaptcha Service
@@ -45,19 +44,19 @@ class CaptchaServiceProvider implements ServiceProviderInterface
          * @param  Container $container A container instance.
          * @return Captcha
          */
-        $container['charcoal/captcha'] = function (Container $container) {
+        $container->set('charcoal/captcha', function (Container $container) {
             $args = [
-                'config' => $container['charcoal/captcha/config']
+                'config' => $container->get('charcoal/captcha/config')
             ];
 
-            if (isset($container['translator'])) {
-                $args['translator'] = $container['translator'];
+            if ($container->has('translator')) {
+                $args['translator'] = $container->get('translator');
                 $captcha = new LocalizedCaptcha($args);
             } else {
                 $captcha = new Captcha($args);
             }
 
             return $captcha;
-        };
+        });
     }
 }
