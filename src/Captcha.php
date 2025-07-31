@@ -408,7 +408,7 @@ class Captcha
      * @param  array|null $query Array of query string arguments to customize the API.
      * @return string Returns an HTML `<script>` element.
      */
-    public function getJsHtml(array $query = null)
+    public function getJsHtml(?array $query = null)
     {
         return sprintf(
             '<script src="%s" async defer></script>',
@@ -423,7 +423,7 @@ class Captcha
      * @param  array $query Array of query string arguments to customize the API.
      * @return string Returns a URI.
      */
-    public function getJsUri(array $query = null)
+    public function getJsUri(?array $query = null)
     {
         if (isset($query['lang'])) {
             $query['hl'] = $query['lang'];

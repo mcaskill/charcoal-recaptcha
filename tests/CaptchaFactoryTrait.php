@@ -27,7 +27,7 @@ trait CaptchaFactoryTrait
      * @param  ReCaptcha|null $client The ReCaptcha client.
      * @return Captcha
      */
-    protected function createAdapter(ReCaptcha $client = null)
+    protected function createAdapter(?ReCaptcha $client = null)
     {
         return new Captcha([
             'config' => $this->getConfig(),
