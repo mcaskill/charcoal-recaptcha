@@ -2,16 +2,14 @@
 
 namespace Charcoal\ReCaptcha;
 
-// From Pimple
-use DI\Container;
-
 // From Google
 use ReCaptcha\ReCaptcha;
-
 // From 'charcoal-recaptcha'
 use Charcoal\ReCaptcha\Captcha;
 use Charcoal\ReCaptcha\CaptchaConfig;
 use Charcoal\ReCaptcha\LocalizedCaptcha;
+use Psr\Container\ContainerInterface;
+use DI\Container;
 
 /**
  * Google reCAPTCHA Service Provider
@@ -24,7 +22,7 @@ class CaptchaServiceProvider
      * @param  Container $container A DI container.
      * @return void
      */
-    public function register(Container $container)
+    public function register(ContainerInterface $container)
     {
         /**
          * Setup the Google reCaptcha service configuration.
@@ -32,7 +30,7 @@ class CaptchaServiceProvider
          * @param  Container $container A container instance.
          * @return CaptchaConfig
          */
-        $container->set('charcoal/captcha/config', function (Container $container) {
+        $container->set('charcoal/captcha/config', function (ContainerInterface $container) {
             $appConfig = $container->get('config');
 
             return new CaptchaConfig($appConfig['apis.google.recaptcha']);
@@ -44,7 +42,7 @@ class CaptchaServiceProvider
          * @param  Container $container A container instance.
          * @return Captcha
          */
-        $container->set('charcoal/captcha', function (Container $container) {
+        $container->set('charcoal/captcha', function (ContainerInterface $container) {
             $args = [
                 'config' => $container->get('charcoal/captcha/config')
             ];
