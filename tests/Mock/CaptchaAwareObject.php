@@ -2,7 +2,6 @@
 
 namespace Charcoal\Tests\Mock;
 
-// From 'mcaskill/charcoal-recaptcha'
 use Charcoal\ReCaptcha\CaptchaAwareTrait;
 
 /**
@@ -11,7 +10,7 @@ use Charcoal\ReCaptcha\CaptchaAwareTrait;
 class CaptchaAwareObject
 {
     use CaptchaAwareTrait {
+        CaptchaAwareTrait::getCaptcha as public;
         CaptchaAwareTrait::setCaptcha as public;
-        CaptchaAwareTrait::captcha as public;
     }
 }

@@ -2,11 +2,11 @@
 
 namespace Charcoal\Tests;
 
-// From 'google/recaptcha'
+use Charcoal\ReCaptcha\CaptchaConfig;
+use Charcoal\Translator\LocalesManager;
+use Charcoal\Translator\Translator;
+use DI\Container;
 use ReCaptcha\ReCaptcha;
-
-// From 'mcaskill/charcoal-recaptcha'
-use Charcoal\ReCaptcha\Captcha;
 
 /**
  * Captcha Factory Utilities
@@ -14,55 +14,58 @@ use Charcoal\ReCaptcha\Captcha;
 trait CaptchaFactoryTrait
 {
     /**
-     * @var array
+     * @var array{
+     *     public_key: string,
+     *     private_key: string,
+     * }
      */
-    private $config = [
+    private array $config = [
         'public_key'  => '{site-key}',
         'private_key' => '{secret-key}',
+        'input_key'   => '{input-key}',
     ];
 
     /**
-     * Create the Captcha adapter.
-     *
-     * @param  ReCaptcha|null $client The ReCaptcha client.
-     * @return Captcha
+     * Create the ReCaptcha client.
      */
-    protected function createAdapter(?ReCaptcha $client = null)
+    protected function createClient(): ReCaptcha
     {
-        return new Captcha([
-            'config' => $this->getConfig(),
-            'client' => $client === null ? $this->createClient() : $client,
+        return new ReCaptcha($this->config['private_key']);
+    }
+
+    /**
+     * Create the Captcha config.
+     */
+    protected function createConfig(): CaptchaConfig
+    {
+        return CaptchaConfig::createFromArray($this->config);
+    }
+
+    protected function createContainer(): Container
+    {
+        return new Container([
+            'config' => [
+                'apis.google.recaptcha' => $this->config,
+            ],
         ]);
     }
 
     /**
-     * Create the ReCaptcha client.
-     *
-     * @return ReCaptcha
+     * Create the Translator service.
      */
-    protected function createClient()
+    protected function createTranslator(): Translator
     {
-        return new ReCaptcha($this->getConfig('private_key'));
+        return new Translator([
+            'manager' => new LocalesManager([
+                'locales' => [
+                    'en' => [],
+                ],
+            ]),
+        ]);
     }
 
-    /**
-     * Returns the reCAPTCHA configset.
-     *
-     * @param  string|null $key If provided, return the key's value.
-     * @return mixed
-     */
-    protected function getConfig($key = null)
+    protected function getConfig(): array
     {
-        if ($key !== null) {
-            if (isset($this->config[$key])) {
-                return $this->config[$key];
-            } else {
-                throw new \InvalidArgumentException(
-                    sprintf('Config key "%s" is not defined', $key)
-                );
-            }
-        }
-
         return $this->config;
     }
 }

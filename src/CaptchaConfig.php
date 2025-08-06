@@ -2,145 +2,88 @@
 
 namespace Charcoal\ReCaptcha;
 
-use InvalidArgumentException;
-
-// From 'charcoal-config'
-use Charcoal\Config\AbstractConfig;
-
 /**
  * Google reCAPTCHA Configuration
  */
-class CaptchaConfig extends AbstractConfig
+class CaptchaConfig
 {
     /**
      * The default input name and GET / POST parameter key used by Google reCAPTCHA.
      *
-     * @const string
-     */
-    const DEFAULT_INPUT_PARAM_KEY = 'g-recaptcha-response';
-
-    /**
-     * Form control name and POST parameter when the user submits the form on your site.
-     *
      * @var string
      */
-    private $inputKey;
+    public const DEFAULT_INPUT_PARAM_KEY = 'g-recaptcha-response';
 
-    /**
-     * The site key used for displaying the reCAPTCHA widget.
-     *
-     * @var string
-     */
-    private $publicKey;
-
-    /**
-     * The secret key shared between your site and reCAPTCHA.
-     *
-     * @var string
-     */
-    private $privateKey;
-
-    /**
-     * Retrieve the default reCAPTCHA service settings.
-     *
-     * @return array
-     */
-    public function defaults()
+    public static function createFromArray(array $data): static
     {
-        return [
-            'input_key'   => static::DEFAULT_INPUT_PARAM_KEY,
-            'public_key'  => '',
-            'private_key' => '',
-        ];
+        return new static(
+            publicKey:  ($data['public_key'] ?? $data['publicKey'] ?? ''),
+            privateKey: ($data['private_key'] ?? $data['privateKey'] ?? ''),
+            inputKey:   ($data['input_key'] ?? $data['inputKey'] ?? self::DEFAULT_INPUT_PARAM_KEY)
+        );
     }
 
     /**
      * Retrieve the HTTP parameter key of the user response token to validate.
-     *
-     * @return string
      */
-    public function inputKey()
+    public function getInputKey(): string
     {
         return $this->inputKey;
     }
 
     /**
      * Set the HTTP parameter key of the user response token to validate.
-     *
-     * @param  string $key The parameter key on an HTTP request to lookup.
-     * @throws InvalidArgumentException If the parameter key is not a string.
-     * @return self
      */
-    public function setInputKey($key)
+    public function withInputKey(string $key): static
     {
-        if (!is_string($key)) {
-            throw new InvalidArgumentException(sprintf(
-                'The parameter key must be a string, received %s',
-                is_object($key) ? get_class($key) : gettype($key)
-            ));
-        }
+        $clone = clone $this;
+        $clone->inputKey = $key;
 
-        $this->inputKey = $key;
-        return $this;
+        return $clone;
     }
 
     /**
      * Retrieve the public key used for displaying the reCAPTCHA widget.
-     *
-     * @return string
      */
-    public function publicKey()
+    public function getPublicKey(): string
     {
         return $this->publicKey;
     }
 
     /**
      * Set the public key used for displaying the reCAPTCHA widget.
-     *
-     * @param  string $key The public key.
-     * @throws InvalidArgumentException If the public key is not a string.
-     * @return self
      */
-    public function setPublicKey($key)
+    public function withPublicKey(string $key): static
     {
-        if (!is_string($key)) {
-            throw new InvalidArgumentException(sprintf(
-                'The public key must be a string, received %s',
-                is_object($key) ? get_class($key) : gettype($key)
-            ));
-        }
+        $clone = clone $this;
+        $clone->publicKey = $key;
 
-        $this->publicKey = $key;
-        return $this;
+        return $clone;
     }
 
     /**
      * Retrieve the private key shared between your site and reCAPTCHA.
-     *
-     * @return string
      */
-    public function privateKey()
+    public function getPrivateKey(): string
     {
         return $this->privateKey;
     }
 
     /**
      * Set the private key shared between your site and reCAPTCHA.
-     *
-     * @param  string $key The private key.
-     * @throws InvalidArgumentException If the private key is not a string.
-     * @return self
      */
-    public function setPrivateKey($key)
+    public function withPrivateKey(string $key): static
     {
-        if (!is_string($key)) {
-            throw new InvalidArgumentException(sprintf(
-                'The private key must be a string, received %s',
-                is_object($key) ? get_class($key) : gettype($key)
-            ));
-        }
+        $clone = clone $this;
+        $clone->privateKey = $key;
 
-        $this->privateKey = $key;
-        return $this;
+        return $clone;
     }
+
+    public function __construct(
+        private string $publicKey = '',
+        private string $privateKey = '',
+        private string $inputKey = self::DEFAULT_INPUT_PARAM_KEY
+    )
+    {}
 }

@@ -1,15 +1,9 @@
-# Package Managers
-
-composer.phar
-composer.lock
-/vendor/
-
-# Logging
-
 *.log
-
-# Builds
-
+/.phpunit.cache/
+/.phpunit.result.cache
 /build/docs/
 /build/logs/
 /build/report/
+/composer.phar
+/composer.lock
+/vendor/

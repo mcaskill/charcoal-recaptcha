@@ -2,59 +2,49 @@
 
 namespace Charcoal\ReCaptcha;
 
-// From Google
-use ReCaptcha\ReCaptcha;
-// From 'charcoal-recaptcha'
 use Charcoal\ReCaptcha\Captcha;
 use Charcoal\ReCaptcha\CaptchaConfig;
 use Charcoal\ReCaptcha\LocalizedCaptcha;
-use Psr\Container\ContainerInterface;
 use DI\Container;
+use Psr\Container\ContainerInterface;
 
 /**
- * Google reCAPTCHA Service Provider
+ * Google reCAPTCHA Charcoal Service Provider
  */
 class CaptchaServiceProvider
 {
     /**
-     * Register Google reCAPTCHA.
+     * Register Google reCAPTCHA Charcoal services.
      *
-     * @param  Container $container A DI container.
-     * @return void
+     * @param Container $container A DI container.
      */
-    public function register(ContainerInterface $container)
+    public function register(ContainerInterface $container): void
     {
         /**
-         * Setup the Google reCaptcha service configuration.
+         * Register the Google reCAPTCHA service configuration.
          *
-         * @param  Container $container A container instance.
-         * @return CaptchaConfig
+         * @param Container $container A container instance.
          */
-        $container->set('charcoal/captcha/config', function (ContainerInterface $container) {
+        $container->set('charcoal/captcha/config', function (ContainerInterface $container): CaptchaConfig {
             $appConfig = $container->get('config');
 
-            return new CaptchaConfig($appConfig['apis.google.recaptcha']);
+            return CaptchaConfig::createFromArray($appConfig['apis.google.recaptcha']);
         });
 
         /**
-         * Add the Charcoal reCaptcha Service
+         * Register the Charcoal reCAPTCHA handler.
          *
-         * @param  Container $container A container instance.
-         * @return Captcha
+         * @param Container $container A container instance.
          */
-        $container->set('charcoal/captcha', function (ContainerInterface $container) {
-            $args = [
-                'config' => $container->get('charcoal/captcha/config')
-            ];
-
+        $container->set('charcoal/captcha', function (ContainerInterface $container): Captcha {
             if ($container->has('translator')) {
-                $args['translator'] = $container->get('translator');
-                $captcha = new LocalizedCaptcha($args);
-            } else {
-                $captcha = new Captcha($args);
+                return new LocalizedCaptcha(
+                    $container->get('charcoal/captcha/config'),
+                    $container->get('translator')
+                );
             }
 
-            return $captcha;
+            return new Captcha($container->get('charcoal/captcha/config'));
         });
     }
 }

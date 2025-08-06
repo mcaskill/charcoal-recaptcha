@@ -2,14 +2,9 @@
 
 namespace Charcoal\ReCaptcha;
 
-use Exception;
-use RuntimeException;
-
-// From 'charcoal-translator'
-use Charcoal\Translator\TranslatorAwareTrait;
-
-// From 'charcoal-recaptcha'
 use Charcoal\ReCaptcha\Captcha;
+use Charcoal\Translator\Translator;
+use ReCaptcha\ReCaptcha;
 
 /**
  * Service wrapper for the Google reCAPTCHA client
@@ -18,45 +13,35 @@ use Charcoal\ReCaptcha\Captcha;
  */
 class LocalizedCaptcha extends Captcha
 {
-    use TranslatorAwareTrait;
-
-    /**
-     * @param  array $data The constructor options.
-     * @return void
-     */
-    public function __construct(array $data)
-    {
-        parent::__construct($data);
-
-        $this->setTranslator($data['translator']);
+    public function __construct(
+        CaptchaConfig $config,
+        private Translator $translator,
+        ?ReCaptcha $client = null
+    ) {
+        parent::__construct($config, $client);
     }
 
     /**
-     * Retrieve the message for the given error code.
+     * Retrieve the localized message for the given error code.
      *
-     * @link   https://developers.google.com/recaptcha/docs/verify
-     * @param  string $code An error code to resolve.
-     * @return array
+     * @link  https://developers.google.com/recaptcha/docs/verify
+     * @param string $code An error code to resolve.
      */
-    protected function getErrorMessage($code)
+    public function getErrorMessage(string $code): string
     {
-        switch ($code) {
-            case 'missing-input-secret':
-            case 'invalid-input-secret':
-                return $this->translator()->trans('recaptcha.' . $code, [], 'validators');
+        $translator = $this->translator;
 
-            case 'missing-input':
-            case 'missing-input-response':
-                return $this->translator()->trans('recaptcha.missing-input-response', [], 'validators');
+        return match ($code) {
+            'missing-input-secret',
+            'invalid-input-secret' => $translator->trans('recaptcha.' . $code, [], 'validators'),
 
-            case 'invalid-input':
-            case 'invalid-input-response':
-                return $this->translator()->trans('recaptcha.invalid-input-response', [], 'validators');
+            'missing-input',
+            'missing-input-response' => $translator->trans('recaptcha.missing-input-response', [], 'validators'),
 
-            default:
-                return $this->translator()->trans('recaptcha.error-code', [
-                    '{code}' => $code
-                ], 'validators');
-        }
+            'invalid-input',
+            'invalid-input-response' => $translator->trans('recaptcha.invalid-input-response', [], 'validators'),
+
+            default => $translator->trans('recaptcha.error-code', [ '{code}' => $code ], 'validators'),
+        };
     }
 }

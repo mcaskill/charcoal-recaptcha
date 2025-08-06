@@ -1,58 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Charcoal\Tests\Unit;
 
-// From 'google/recaptcha'
-use ReCaptcha\ReCaptcha;
-
-// From 'mcaskill/charcoal-recaptcha'
+use Charcoal\ReCaptcha\Captcha;
+use Charcoal\ReCaptcha\CaptchaConfig;
 use Charcoal\ReCaptcha\CaptchaAwareTrait;
 use Charcoal\Tests\AbstractTestCase;
 use Charcoal\Tests\Mock\CaptchaAwareObject;
+use PHPUnit\Framework\Attributes\CoversTrait;
+use PHPUnit\Framework\Attributes\UsesClass;
+use TypeError;
 
-/**
- * @coversDefaultClass \Charcoal\ReCaptcha\CaptchaAwareTrait
- */
-class CaptchaAwareTest extends AbstractTestCase
+#[CoversTrait(CaptchaAwareTrait::class)]
+#[UsesClass(Captcha::class)]
+#[UsesClass(CaptchaConfig::class)]
+final class CaptchaAwareTest extends AbstractTestCase
 {
-    /**
-     * @var CaptchaAwareObject
-     */
-    private $obj;
+    private ?CaptchaAwareObject $obj = null;
 
-    /**
-     * Create the Captcha instance.
-     *
-     * @return void
-     */
-    public function setUp()
+    protected function setUp(): void
     {
-        $this->obj = new CaptchaAwareObject();
+        $this->obj ??= new CaptchaAwareObject();
     }
 
-    /**
-     * @covers ::setCaptcha
-     * @covers ::captcha
-     *
-     * @return void
-     */
-    public function testCaptchaAwareness()
+    public function testCaptchaAwareness(): void
     {
-        $captcha = $this->createAdapter();
+        $captcha = new Captcha($this->createConfig());
 
         $this->obj->setCaptcha($captcha);
-        $this->assertSame($captcha, $this->obj->captcha());
+        $this->assertSame($captcha, $this->obj->getCaptcha());
     }
 
-    /**
-     * @expectedException        RuntimeException
-     * @expectedExceptionMessage Missing Charcoal\ReCaptcha\Captcha adapter
-     *
-     * @covers ::captcha
-     * @return void
-     */
-    public function testMissingCaptcha()
+    public function testMissingCaptcha(): void
     {
-        $this->obj->captcha();
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Return value must be of type Charcoal\ReCaptcha\Captcha, null returned');
+
+        $this->obj->getCaptcha();
     }
 }

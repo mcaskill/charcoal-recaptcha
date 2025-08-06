@@ -2,63 +2,80 @@
 
 namespace Charcoal\Tests\Unit;
 
-// From 'google/recaptcha'
+use Charcoal\ReCaptcha\Captcha;
+use Charcoal\ReCaptcha\CaptchaConfig;
+use Charcoal\Tests\AbstractTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use ReCaptcha\ReCaptcha;
 
-// From 'locomotivemtl/charcoal-config'
-use Charcoal\Config\ConfigInterface;
-
-// From 'mcaskill/charcoal-recaptcha'
-use Charcoal\ReCaptcha\Captcha;
-use Charcoal\Tests\AbstractTestCase;
-
-/**
- * @coversDefaultClass \Charcoal\ReCaptcha\Captcha
- */
+#[CoversClass(Captcha::class)]
+#[UsesClass(CaptchaConfig::class)]
 class CaptchaTest extends AbstractTestCase
 {
-    /**
-     * @var Captcha
-     */
-    private $captcha;
+    private ?Captcha $captcha = null;
 
-    /**
-     * @var ReCaptcha
-     */
-    private $client;
+    private ?ReCaptcha $client = null;
+
+    private ?CaptchaConfig $config = null;
 
     /**
      * Create the Captcha instance.
-     *
-     * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
-        $this->client  = $this->createClient();
-        $this->captcha = $this->createAdapter($this->client);
+        $this->captcha = new Captcha(
+            ($this->config = $this->createConfig()),
+            ($this->client = $this->createClient())
+        );
+    }
+
+    public function testConstruct(): void
+    {
+        $this->assertSame($this->client, $this->captcha->getClient());
+        $this->assertSame($this->config, $this->captcha->getConfig());
+    }
+
+    public function testGetErrorMessages(): void
+    {
+        $expectations = self::provideErrorCodes();
+
+        $messages = $this->captcha->getErrorMessages(array_column($expectations, 0));
+        $this->assertEquals(array_column($expectations, 1, 0), $messages);
     }
 
     /**
-     * @covers ::__construct
-     * @covers ::setClient
-     * @covers ::client
-     * @covers ::setConfig
-     * @covers ::config
-     * @covers ::createConfig
-     * @return void
+     * @param string $code     The error code.
+     * @param string $expected The expected error message.
      */
-    public function testConstruct()
+    #[DataProvider('provideErrorCodes')]
+    public function testGetErrorMessage(string $code, string $expected): void
     {
-        $this->assertSame($this->client, $this->captcha->client());
-        $this->assertInstanceOf(ConfigInterface::class, $this->captcha->config());
+        $message = $this->captcha->getErrorMessage($code);
+        $this->assertEquals($expected, $message);
     }
 
     /**
-     * @covers ::getWidgetHtml
-     * @covers ::buildAttributes
-     * @return void
+     * @used-by testGetErrorMessage
+     * @return array<string, list{0: string, 1: string}>
      */
-    public function testGetWidgetHtml()
+    public static function provideErrorCodes(): array
+    {
+        // phpcs:disable Generic.Files.LineLength.TooLong
+        return [
+            'missing-input-secret'   => [ 'missing-input-secret',   'The reCAPTCHA secret parameter is missing.' ],
+            'invalid-input-secret'   => [ 'invalid-input-secret',   'The reCAPTCHA secret parameter is invalid or malformed.' ],
+            'missing-input'          => [ 'missing-input',          'The CAPTCHA response parameter is missing.' ],
+            'missing-input-response' => [ 'missing-input-response', 'The CAPTCHA response parameter is missing.' ],
+            'invalid-input'          => [ 'invalid-input',          'The CAPTCHA response parameter is invalid or malformed.' ],
+            'invalid-input-response' => [ 'invalid-input-response', 'The CAPTCHA response parameter is invalid or malformed.' ],
+            'unrecognized-error'     => [ 'unrecognized-error',     'Unknown reCAPTCHA error: unrecognized-error' ],
+        ];
+        // phpcs:enable
+    }
+
+    public function testGetWidgetHtml(): void
     {
         // phpcs:disable Generic.Files.LineLength.TooLong
         $default   = '<div class="g-recaptcha" data-sitekey="{site-key}"></div>';
@@ -69,12 +86,7 @@ class CaptchaTest extends AbstractTestCase
         $this->assertEquals($withAttrs, $this->captcha->getWidgetHtml([ 'data-theme' => 'light' ]));
     }
 
-    /**
-     * @covers ::getJsHtml
-     * @covers ::getJsUri
-     * @return void
-     */
-    public function testGetJsHtml()
+    public function testGetJsHtml(): void
     {
         // phpcs:disable Generic.Files.LineLength.TooLong
         $default      = '<script src="' . Captcha::CLIENT_API . '" async defer></script>';
@@ -91,15 +103,12 @@ class CaptchaTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider provideDisplayArgs
-     * @covers ::display
-     *
-     * @param  string $expected    The expected rendered HTML.
-     * @param  mixed  $attributes  The HTML attributes for the 'g-recaptcha' tag.
-     * @param  mixed  $queryParams The query parameters for the JavaScript API link.
-     * @return void
+     * @param string $expected    The expected rendered HTML.
+     * @param mixed  $attributes  The HTML attributes for the 'g-recaptcha' tag.
+     * @param mixed  $queryParams The query parameters for the JavaScript API link.
      */
-    public function testDisplay($expected, $attributes, $queryParams)
+    #[DataProvider('provideDisplayArgs')]
+    public function testDisplay(string $expected, mixed $attributes, mixed $queryParams): void
     {
         $actual = $this->captcha->display($attributes, $queryParams);
         $this->assertEquals($expected, $actual);
@@ -107,9 +116,9 @@ class CaptchaTest extends AbstractTestCase
 
     /**
      * @used-by testDisplay
-     * @return  array
+     * @return array<string, list{0: string, 1: string, array<string,mixed>|bool, array<string,mixed>|bool}>
      */
-    public function provideDisplayArgs()
+    public static function provideDisplayArgs(): array
     {
         // phpcs:disable Generic.Files.LineLength.TooLong
         return [

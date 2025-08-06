@@ -2,9 +2,6 @@
 
 namespace Charcoal\ReCaptcha;
 
-use RuntimeException;
-
-// From 'charcoal-recaptcha'
 use Charcoal\ReCaptcha\Captcha;
 
 /**
@@ -14,36 +11,21 @@ trait CaptchaAwareTrait
 {
     /**
      * Store the reCAPTCHA service instance.
-     *
-     * @var Captcha
      */
-    private $captcha;
+    private ?Captcha $captcha = null;
 
     /**
      * Retrieve the CAPTCHA validation service.
-     *
-     * @throws RuntimeException If the CAPTCHA service was not previously set.
-     * @return Captcha
      */
-    public function captcha()
+    public function getCaptcha(): Captcha
     {
-        if (!isset($this->captcha)) {
-            throw new RuntimeException(sprintf(
-                'Missing %s adapter',
-                Captcha::class
-            ));
-        }
-
         return $this->captcha;
     }
 
     /**
      * Set a CAPTCHA validation service.
-     *
-     * @param  Captcha $captcha The CAPTCHA service.
-     * @return void
      */
-    protected function setCaptcha(Captcha $captcha)
+    protected function setCaptcha(Captcha $captcha): void
     {
         $this->captcha = $captcha;
     }
